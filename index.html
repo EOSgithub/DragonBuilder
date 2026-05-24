@@ -112,6 +112,8 @@
     align-items: center;
     overflow: hidden;
     backdrop-filter: blur(4px);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .dragon-card::after {
@@ -309,9 +311,23 @@
   }
 
   @media (max-width: 600px) {
-    .dragons { grid-template-columns: 1fr; }
-    header h1 { font-size: 2rem; }
-    .wrapper { padding: 50px 16px 50px; }
+    .dragons { grid-template-columns: 1fr; gap: 16px; }
+    header h1 { font-size: 1.9rem; }
+    .wrapper { padding: 40px 16px 40px; }
+    header { margin-bottom: 36px; }
+    .dragon-card { padding: 28px 20px 22px; }
+    .dragon-lore { font-size: 0.85rem; margin-bottom: 20px; }
+    .open-btn { padding: 12px 28px; font-size: 0.7rem; }
+    .info-box { padding: 14px 18px; }
+    .info-box p { font-size: 0.82rem; }
+  }
+
+  @media (hover: none) {
+    .dragon-card:hover { transform: none; }
+    .card-abyssal:hover { border-color: rgba(0,200,215,0.22); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .card-telluric:hover { border-color: rgba(232,156,31,0.22); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .card-abyssal:hover::after, .card-telluric:hover::after { opacity: 0; }
+    .dragon-card:active { transform: scale(0.97); transition: transform 0.1s; }
   }
 </style>
 </head>

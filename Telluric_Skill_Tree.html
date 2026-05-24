@@ -136,9 +136,10 @@
     width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
   }
 
-  /* Path headers */
-  .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .path { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  /* Path layout */
+  .paths { display: flex; flex-direction: column; gap: 28px; }
+  .path { display: flex; flex-direction: column; align-items: stretch; }
+  .nodes-row { display: flex; flex-direction: row; align-items: center; overflow-x: auto; padding-bottom: 6px; }
   .path-header {
     font-family: 'Cinzel', serif;
     font-size: 0.75rem;
@@ -155,22 +156,22 @@
   .path-3 .path-header { color: var(--col3); border: 1px solid rgba(52,211,153,0.3); background: rgba(52,211,153,0.05); border-bottom: none; }
 
   /* Nodes */
-  .node-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .node-wrap { display: flex; flex-direction: row; align-items: center; flex-shrink: 0; }
   .connector {
-    width: 2px;
-    height: 28px;
-    background: linear-gradient(to bottom, rgba(232,156,31,0.15), rgba(232,156,31,0.05));
-    position: relative;
+    width: 14px;
+    height: 2px;
+    background: linear-gradient(to right, rgba(232,156,31,0.05), rgba(232,156,31,0.2));
     flex-shrink: 0;
   }
-  .connector.active { background: linear-gradient(to bottom, rgba(232,156,31,0.7), rgba(232,156,31,0.3)); box-shadow: 0 0 6px rgba(232,156,31,0.5); }
-  .path-2 .connector { background: linear-gradient(to bottom, rgba(182,106,46,0.15), rgba(182,106,46,0.05)); }
-  .path-2 .connector.active { background: linear-gradient(to bottom, rgba(182,106,46,0.7), rgba(182,106,46,0.3)); box-shadow: 0 0 6px rgba(182,106,46,0.5); }
-  .path-3 .connector { background: linear-gradient(to bottom, rgba(52,211,153,0.15), rgba(52,211,153,0.05)); }
-  .path-3 .connector.active { background: linear-gradient(to bottom, rgba(52,211,153,0.7), rgba(52,211,153,0.3)); box-shadow: 0 0 6px rgba(52,211,153,0.5); }
+  .connector.active { background: linear-gradient(to right, rgba(232,156,31,0.3), rgba(232,156,31,0.8)); box-shadow: 0 0 6px rgba(232,156,31,0.5); }
+  .path-2 .connector { background: linear-gradient(to right, rgba(182,106,46,0.05), rgba(182,106,46,0.2)); }
+  .path-2 .connector.active { background: linear-gradient(to right, rgba(182,106,46,0.3), rgba(182,106,46,0.8)); box-shadow: 0 0 6px rgba(182,106,46,0.5); }
+  .path-3 .connector { background: linear-gradient(to right, rgba(52,211,153,0.05), rgba(52,211,153,0.2)); }
+  .path-3 .connector.active { background: linear-gradient(to right, rgba(52,211,153,0.3), rgba(52,211,153,0.8)); box-shadow: 0 0 6px rgba(52,211,153,0.5); }
 
   .node {
-    width: 100%;
+    width: 180px;
+    flex-shrink: 0;
     border-radius: 10px;
     padding: 12px 14px;
     cursor: not-allowed;
@@ -179,17 +180,20 @@
     user-select: none;
     border: 1px solid var(--locked);
     background: rgba(25,18,10,0.8);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   .node.available { cursor: pointer; }
   .node.available:hover { transform: translateY(-2px); }
 
   /* Stat node */
   .node.stat-node {
-    padding: 8px 14px;
+    width: 72px;
+    padding: 8px 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 4px;
     border-radius: 8px;
     background: rgba(18,12,6,0.9);
   }
@@ -379,6 +383,8 @@
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   .reset-btn:hover { color: var(--col1); border-color: rgba(232,156,31,0.4); box-shadow: 0 0 12px rgba(232,156,31,0.2); }
 
@@ -461,6 +467,8 @@
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   .save-tool-btn:hover { color: var(--col1); border-color: rgba(232,156,31,0.3); }
 
@@ -489,9 +497,103 @@
     word-break: break-all;
   }
 
+  /* GitHub sync panel */
+  .gh-settings {
+    margin-top: 28px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  .gh-settings > summary {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #5a3a18;
+    cursor: pointer;
+    list-style: none;
+    padding: 6px 0;
+    transition: color 0.3s;
+  }
+  .gh-settings > summary::-webkit-details-marker { display: none; }
+  .gh-settings[open] > summary,
+  .gh-settings > summary:hover { color: var(--col1); }
+  .gh-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+    text-align: left;
+  }
+  .gh-fields input {
+    background: rgba(30,18,6,0.9);
+    border: 1px solid rgba(232,156,31,0.15);
+    border-radius: 6px;
+    color: #c0a070;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.85rem;
+    padding: 7px 12px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.3s;
+  }
+  .gh-fields input:focus { border-color: rgba(232,156,31,0.5); }
+  .gh-fields input::placeholder { color: #5a3a18; }
+  .gh-hint {
+    font-size: 0.72rem;
+    color: #5a3a18;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+  .gh-btn-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .gh-status {
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 1.5px;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 18px;
+    transition: color 0.3s;
+  }
+  .gh-ok   { color: var(--col1); }
+  .gh-sync { color: #8a6a40; }
+  .gh-err  { color: #e04030; }
+
   @media (max-width: 700px) {
-    .paths { grid-template-columns: 1fr; }
+    .wrapper { padding: 16px 14px 40px; }
     .stat-divider { display: none; }
+    .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 6px; padding: 12px 10px; }
+    .stat-block .value { font-size: 1.25rem; }
+    .paths { gap: 20px; }
+    .nodes-row { flex-direction: column; overflow-x: visible; align-items: stretch; }
+    .node-wrap { flex-direction: column; }
+    .connector { width: 2px; height: 18px; background: linear-gradient(to bottom, rgba(232,156,31,0.05), rgba(232,156,31,0.25)); }
+    .connector.active { background: linear-gradient(to bottom, rgba(232,156,31,0.3), rgba(232,156,31,0.8)); box-shadow: 0 0 5px rgba(232,156,31,0.4); }
+    .path-2 .connector { background: linear-gradient(to bottom, rgba(182,106,46,0.05), rgba(182,106,46,0.25)); }
+    .path-2 .connector.active { background: linear-gradient(to bottom, rgba(182,106,46,0.3), rgba(182,106,46,0.8)); box-shadow: 0 0 5px rgba(182,106,46,0.4); }
+    .path-3 .connector { background: linear-gradient(to bottom, rgba(52,211,153,0.05), rgba(52,211,153,0.25)); }
+    .path-3 .connector.active { background: linear-gradient(to bottom, rgba(52,211,153,0.3), rgba(52,211,153,0.8)); box-shadow: 0 0 5px rgba(52,211,153,0.4); }
+    .node, .node.stat-node { width: 100%; }
+    .save-tool-btn { padding: 11px 20px; }
+    .reset-btn { padding: 11px 28px; }
+    .gh-fields input, .code-area textarea { font-size: 16px; }
+  }
+
+  @media (hover: none) {
+    .node.available:hover { transform: none; }
+    .node.available:active { transform: scale(0.98); }
+    .save-tool-btn:hover { color: #6a4a20; border-color: rgba(232,156,31,0.1); }
+    .save-tool-btn:active { color: var(--col1); border-color: rgba(232,156,31,0.4); }
+    .reset-btn:hover { color: #8a6a40; border-color: rgba(232,156,31,0.15); box-shadow: none; }
+    .reset-btn:active { color: var(--col1); border-color: rgba(232,156,31,0.4); }
   }
 </style>
 </head>
@@ -577,6 +679,21 @@
       <button class="save-tool-btn" id="loadCodeBtn">Carica Codice</button>
     </div>
     <div class="save-indicator" id="saveIndicator">✓ Progresso salvato</div>
+
+    <details class="gh-settings" id="ghSettings">
+      <summary>⚙ Sincronizzazione GitHub</summary>
+      <div class="gh-fields">
+        <p class="gh-hint">Inserisci le credenziali per salvare il progresso nel repository GitHub. Il token viene conservato solo nel browser.</p>
+        <input id="ghOwner" placeholder="GitHub Username o Org" autocomplete="off" spellcheck="false" />
+        <input id="ghRepo"  placeholder="Nome del repository" autocomplete="off" spellcheck="false" />
+        <input id="ghToken" type="password" placeholder="Personal Access Token (Contents: Read & Write)" autocomplete="off" />
+        <div class="gh-btn-row">
+          <button class="save-tool-btn" id="ghSaveConfig">Salva Config</button>
+          <button class="save-tool-btn" id="ghSyncNow">↺ Sincronizza Ora</button>
+        </div>
+      </div>
+      <div class="gh-status" id="ghStatus"></div>
+    </details>
   </div>
 </div>
 
@@ -711,6 +828,7 @@ function saveState() {
     const ind = document.getElementById('saveIndicator');
     if (ind) { ind.style.opacity = '1'; setTimeout(() => { ind.style.opacity = '0'; }, 2000); }
   } catch(e) {}
+  saveToGitHub();
 }
 
 // Load saved state on init
@@ -764,6 +882,10 @@ function rebuildUI() {
     hdr.className = 'path-header';
     hdr.innerHTML = path.name + '<br><span style="font-size:0.6rem;opacity:0.7;">' + path.sub + '</span>';
     col.appendChild(hdr);
+
+    const nodesRow = document.createElement('div');
+    nodesRow.className = 'nodes-row';
+    col.appendChild(nodesRow);
 
     path.nodes.forEach((node, ni) => {
       const wrap = document.createElement('div');
@@ -840,7 +962,7 @@ function rebuildUI() {
       }
 
       wrap.appendChild(el);
-      col.appendChild(wrap);
+      nodesRow.appendChild(wrap);
     });
 
     container.appendChild(col);
@@ -853,6 +975,116 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   saveState();
   updateStats();
   rebuildUI();
+});
+
+// ── GITHUB SYNC ──────────────────────────────────────────────────────────────
+const GH_SAVE_PATH = 'saves/dragon_telluric.json';
+
+function getGHConfig() {
+  return {
+    owner: localStorage.getItem('gh_owner') || '',
+    repo:  localStorage.getItem('gh_repo')  || '',
+    token: localStorage.getItem('gh_token') || '',
+  };
+}
+
+function ghConfigured() {
+  const c = getGHConfig();
+  return !!(c.owner && c.repo && c.token);
+}
+
+function setGHStatus(type, msg) {
+  const el = document.getElementById('ghStatus');
+  if (el) { el.textContent = msg; el.className = 'gh-status gh-' + type; }
+}
+
+async function loadFromGitHub() {
+  if (!ghConfigured()) return false;
+  const { owner, repo, token } = getGHConfig();
+  setGHStatus('sync', '↺ Caricamento da GitHub...');
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
+    );
+    if (res.status === 404) {
+      setGHStatus('ok', '● Nessun salvataggio remoto — uso dati locali');
+      return false;
+    }
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+    const data = await res.json();
+    const parsed = JSON.parse(atob(data.content.replace(/\s/g, '')));
+    unlocked.clear();
+    (parsed.unlocked || []).forEach(id => unlocked.add(id));
+    localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked]));
+    setGHStatus('ok', '✓ Sincronizzato con GitHub');
+    return true;
+  } catch(e) {
+    setGHStatus('err', '✗ ' + e.message);
+    return false;
+  }
+}
+
+async function saveToGitHub() {
+  if (!ghConfigured()) return;
+  const { owner, repo, token } = getGHConfig();
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+  };
+  setGHStatus('sync', '↑ Salvataggio su GitHub...');
+  try {
+    let sha;
+    const getRes = await fetch(apiUrl, { headers });
+    if (getRes.ok) {
+      sha = (await getRes.json()).sha;
+    } else if (getRes.status !== 404) {
+      throw new Error(`GitHub API ${getRes.status}`);
+    }
+    const body = {
+      message: 'Update dragon saves [skip ci]',
+      content: btoa(JSON.stringify({ unlocked: [...unlocked] })),
+    };
+    if (sha) body.sha = sha;
+    const putRes = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+    if (!putRes.ok) throw new Error(`GitHub API ${putRes.status}`);
+    setGHStatus('ok', '✓ Salvato su GitHub');
+  } catch(e) {
+    setGHStatus('err', '✗ ' + e.message);
+  }
+}
+
+// GitHub config form handlers
+(function initGHForm() {
+  const c = getGHConfig();
+  if (c.owner) document.getElementById('ghOwner').value = c.owner;
+  if (c.repo)  document.getElementById('ghRepo').value  = c.repo;
+  if (c.token) document.getElementById('ghToken').value = c.token;
+
+  // Auto-detect owner/repo from GitHub Pages URL (username.github.io/repo)
+  const parts = window.location.hostname.split('.');
+  if (parts[1] === 'github' && parts[2] === 'io') {
+    if (!c.owner) document.getElementById('ghOwner').value = parts[0];
+    const repoFromPath = window.location.pathname.split('/')[1];
+    if (!c.repo && repoFromPath) document.getElementById('ghRepo').value = repoFromPath;
+  }
+})();
+
+document.getElementById('ghSaveConfig').addEventListener('click', () => {
+  localStorage.setItem('gh_owner', document.getElementById('ghOwner').value.trim());
+  localStorage.setItem('gh_repo',  document.getElementById('ghRepo').value.trim());
+  localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
+  setGHStatus('ok', '✓ Configurazione salvata');
+});
+
+document.getElementById('ghSyncNow').addEventListener('click', async () => {
+  localStorage.setItem('gh_owner', document.getElementById('ghOwner').value.trim());
+  localStorage.setItem('gh_repo',  document.getElementById('ghRepo').value.trim());
+  localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
+  const loaded = await loadFromGitHub();
+  if (loaded) { updateStats(); rebuildUI(); }
 });
 
 // ── EXPORT / IMPORT ──────────────────────────────────────────────────────────
@@ -918,6 +1150,9 @@ document.getElementById('loadCodeBtn').addEventListener('click', () => {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateStats();
 rebuildUI();
+if (ghConfigured()) {
+  loadFromGitHub().then(loaded => { if (loaded) { updateStats(); rebuildUI(); } });
+}
 </script>
 </body>
 </html>
