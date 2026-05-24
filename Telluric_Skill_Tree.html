@@ -413,9 +413,167 @@
     box-shadow: 0 0 6px rgba(232,156,31,0.6);
   }
 
+  /* Back link */
+  .back-btn {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a6a40;
+    text-decoration: none;
+    padding: 6px 16px;
+    border: 1px solid rgba(232,156,31,0.12);
+    border-radius: 6px;
+    margin-bottom: 22px;
+    transition: all 0.3s;
+  }
+  .back-btn:hover { color: var(--col1); border-color: rgba(232,156,31,0.35); }
+
+  /* Save indicator */
+  .save-indicator {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    color: var(--col1);
+    opacity: 0;
+    transition: opacity 0.4s;
+    margin-top: 12px;
+  }
+
+  /* Save tools */
+  .save-tools {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .save-tool-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #7a5a30;
+    background: transparent;
+    border: 1px solid rgba(232,156,31,0.1);
+    padding: 6px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .save-tool-btn:hover { color: var(--col1); border-color: rgba(232,156,31,0.3); }
+
+  /* Code area */
+  .code-area {
+    margin-top: 14px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .code-area textarea {
+    width: 100%;
+    background: rgba(40,20,5,0.8);
+    border: 1px solid rgba(232,156,31,0.2);
+    border-radius: 6px;
+    color: #c0a070;
+    font-family: monospace;
+    font-size: 0.78rem;
+    padding: 8px 12px;
+    resize: vertical;
+    outline: none;
+    word-break: break-all;
+  }
+
+  /* GitHub sync panel */
+  .gh-settings {
+    margin-top: 28px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  .gh-settings > summary {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #6a4a20;
+    cursor: pointer;
+    list-style: none;
+    padding: 6px 0;
+    transition: color 0.3s;
+  }
+  .gh-settings > summary::-webkit-details-marker { display: none; }
+  .gh-settings[open] > summary,
+  .gh-settings > summary:hover { color: var(--col1); }
+  .gh-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+    text-align: left;
+  }
+  .gh-fields input {
+    background: rgba(40,20,5,0.85);
+    border: 1px solid rgba(232,156,31,0.15);
+    border-radius: 6px;
+    color: #c0a070;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.85rem;
+    padding: 7px 12px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.3s;
+  }
+  .gh-fields input:focus { border-color: rgba(232,156,31,0.5); }
+  .gh-fields input::placeholder { color: #5a4a2a; }
+  .gh-hint {
+    font-size: 0.72rem;
+    color: #5a4a2a;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+  .gh-btn-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .gh-status {
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 1.5px;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 18px;
+    transition: color 0.3s;
+  }
+  .gh-ok   { color: var(--col1); }
+  .gh-sync { color: #8a6a40; }
+  .gh-err  { color: #e04030; }
+
   @media (max-width: 700px) {
     .paths { grid-template-columns: 1fr; }
     .stat-divider { display: none; }
+    .save-tool-btn { padding: 11px 20px; }
+    .reset-btn { padding: 11px 28px; }
+    .gh-fields input, .code-area textarea { font-size: 16px; }
+  }
+
+  @media (hover: none) {
+    .node.available:hover { transform: none; }
+    .node.available:active { transform: scale(0.98); }
+    .save-tool-btn:active { color: var(--col1); border-color: rgba(232,156,31,0.4); }
+    .reset-btn:active { color: var(--col1); border-color: rgba(232,156,31,0.4); }
   }
 </style>
 </head>
@@ -425,6 +583,7 @@
 
 <div class="wrapper">
   <header>
+    <a href="index.html" class="back-btn">← Wyrmling Codex</a>
     <h1>⛰️ Telluric <span>Dragon</span> Cub</h1>
     <p>Skill Tree — Level Up Your Wyrmling</p>
   </header>
@@ -491,6 +650,30 @@
 
   <div class="footer">
     <button class="reset-btn" id="resetBtn">⟳ Reset All Nodes</button>
+    <div class="save-tools">
+      <button class="save-tool-btn" id="exportBtn">↑ Export Save Code</button>
+      <button class="save-tool-btn" id="importBtn">↓ Import Save Code</button>
+    </div>
+    <div class="code-area" id="codeArea">
+      <textarea id="codeInput" rows="3" placeholder="Incolla qui il tuo save code, poi clicca Carica"></textarea>
+      <button class="save-tool-btn" id="loadCodeBtn">Carica Codice</button>
+    </div>
+    <div class="save-indicator" id="saveIndicator">✓ Progresso salvato</div>
+
+    <details class="gh-settings" id="ghSettings">
+      <summary>⚙ Sincronizzazione GitHub</summary>
+      <div class="gh-fields">
+        <p class="gh-hint">Inserisci le credenziali per salvare il progresso nel repository GitHub. Il token viene conservato solo nel browser.</p>
+        <input id="ghOwner" placeholder="GitHub Username o Org" autocomplete="off" spellcheck="false" />
+        <input id="ghRepo"  placeholder="Nome del repository" autocomplete="off" spellcheck="false" />
+        <input id="ghToken" type="password" placeholder="Personal Access Token (Contents: Read & Write)" autocomplete="off" />
+        <div class="gh-btn-row">
+          <button class="save-tool-btn" id="ghSaveConfig">Salva Config</button>
+          <button class="save-tool-btn" id="ghSyncNow">↺ Sincronizza Ora</button>
+        </div>
+      </div>
+      <div class="gh-status" id="ghStatus"></div>
+    </details>
   </div>
 </div>
 
@@ -616,6 +799,24 @@ const paths = [
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const unlocked = new Set();
 
+// ── PERSISTENCE ──────────────────────────────────────────────────────────────
+const SAVE_KEY = 'dragon_telluric';
+
+function saveState() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked]));
+    const ind = document.getElementById('saveIndicator');
+    if (ind) { ind.style.opacity = '1'; setTimeout(() => { ind.style.opacity = '0'; }, 2000); }
+  } catch(e) {}
+  saveToGitHub();
+}
+
+// Load saved state on init
+try {
+  const saved = localStorage.getItem(SAVE_KEY);
+  if (saved) JSON.parse(saved).forEach(id => unlocked.add(id));
+} catch(e) {}
+
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 function modStr(v) {
   const m = Math.floor((v - 10) / 2);
@@ -713,6 +914,7 @@ function rebuildUI() {
           } else {
             unlocked.add(node.id);
           }
+          saveState();
           updateStats();
           rebuildUI();
         });
@@ -744,9 +946,155 @@ function rebuildUI() {
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset di tutti i nodi? Il progresso verrà cancellato.')) return;
   unlocked.clear();
+  saveState();
   updateStats();
   rebuildUI();
+});
+
+// ── GITHUB SYNC ──────────────────────────────────────────────────────────────
+const GH_SAVE_PATH = 'saves/dragon_telluric.json';
+
+function getGHConfig() {
+  return {
+    owner: localStorage.getItem('gh_owner') || '',
+    repo:  localStorage.getItem('gh_repo')  || '',
+    token: localStorage.getItem('gh_token') || '',
+  };
+}
+
+function ghConfigured() {
+  const c = getGHConfig();
+  return !!(c.owner && c.repo && c.token);
+}
+
+function setGHStatus(type, msg) {
+  const el = document.getElementById('ghStatus');
+  if (el) { el.textContent = msg; el.className = 'gh-status gh-' + type; }
+}
+
+async function loadFromGitHub() {
+  if (!ghConfigured()) return false;
+  const { owner, repo, token } = getGHConfig();
+  setGHStatus('sync', '↺ Caricamento da GitHub...');
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
+    );
+    if (res.status === 404) {
+      setGHStatus('ok', '● Nessun salvataggio remoto — uso dati locali');
+      return false;
+    }
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+    const data = await res.json();
+    const parsed = JSON.parse(atob(data.content.replace(/\s/g, '')));
+    unlocked.clear();
+    (parsed.unlocked || []).forEach(id => unlocked.add(id));
+    localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked]));
+    setGHStatus('ok', '✓ Sincronizzato con GitHub');
+    return true;
+  } catch(e) {
+    setGHStatus('err', '✗ ' + e.message);
+    return false;
+  }
+}
+
+async function saveToGitHub() {
+  if (!ghConfigured()) return;
+  const { owner, repo, token } = getGHConfig();
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+  };
+  setGHStatus('sync', '↑ Salvataggio su GitHub...');
+  try {
+    let sha;
+    const getRes = await fetch(apiUrl, { headers });
+    if (getRes.ok) {
+      sha = (await getRes.json()).sha;
+    } else if (getRes.status !== 404) {
+      throw new Error(`GitHub API ${getRes.status}`);
+    }
+    const body = {
+      message: 'Update dragon saves [skip ci]',
+      content: btoa(JSON.stringify({ unlocked: [...unlocked] })),
+    };
+    if (sha) body.sha = sha;
+    const putRes = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+    if (!putRes.ok) throw new Error(`GitHub API ${putRes.status}`);
+    setGHStatus('ok', '✓ Salvato su GitHub');
+  } catch(e) {
+    setGHStatus('err', '✗ ' + e.message);
+  }
+}
+
+(function initGHForm() {
+  const c = getGHConfig();
+  if (c.owner) document.getElementById('ghOwner').value = c.owner;
+  if (c.repo)  document.getElementById('ghRepo').value  = c.repo;
+  if (c.token) document.getElementById('ghToken').value = c.token;
+
+  const parts = window.location.hostname.split('.');
+  if (parts[1] === 'github' && parts[2] === 'io') {
+    if (!c.owner) document.getElementById('ghOwner').value = parts[0];
+    const repoFromPath = window.location.pathname.split('/')[1];
+    if (!c.repo && repoFromPath) document.getElementById('ghRepo').value = repoFromPath;
+  }
+})();
+
+document.getElementById('ghSaveConfig').addEventListener('click', () => {
+  localStorage.setItem('gh_owner', document.getElementById('ghOwner').value.trim());
+  localStorage.setItem('gh_repo',  document.getElementById('ghRepo').value.trim());
+  localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
+  setGHStatus('ok', '✓ Configurazione salvata');
+});
+
+document.getElementById('ghSyncNow').addEventListener('click', async () => {
+  localStorage.setItem('gh_owner', document.getElementById('ghOwner').value.trim());
+  localStorage.setItem('gh_repo',  document.getElementById('ghRepo').value.trim());
+  localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
+  const loaded = await loadFromGitHub();
+  if (loaded) { updateStats(); rebuildUI(); }
+});
+
+// ── EXPORT / IMPORT ──────────────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const code = btoa(JSON.stringify([...unlocked]));
+  const area = document.getElementById('codeArea');
+  const input = document.getElementById('codeInput');
+  area.style.display = 'flex';
+  input.value = code;
+  input.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  alert('Save code copiato negli appunti!\n\nPuoi anche copiarlo manualmente dalla casella di testo.');
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  const area = document.getElementById('codeArea');
+  area.style.display = area.style.display === 'flex' ? 'none' : 'flex';
+  if (area.style.display === 'flex') document.getElementById('codeInput').value = '';
+});
+
+document.getElementById('loadCodeBtn').addEventListener('click', () => {
+  const code = document.getElementById('codeInput').value.trim();
+  if (!code) return;
+  try {
+    const ids = JSON.parse(atob(code));
+    if (!Array.isArray(ids)) throw new Error();
+    unlocked.clear();
+    ids.forEach(id => unlocked.add(id));
+    saveState();
+    updateStats();
+    rebuildUI();
+    document.getElementById('codeArea').style.display = 'none';
+    document.getElementById('codeInput').value = '';
+  } catch(e) {
+    alert('Codice non valido. Controlla e riprova.');
+  }
 });
 
 // ── PARTICLES ─────────────────────────────────────────────────────────────────
@@ -776,6 +1124,10 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateStats();
 rebuildUI();
+// Try to load from GitHub after first render (shows local state instantly, then updates if remote differs)
+if (ghConfigured()) {
+  loadFromGitHub().then(loaded => { if (loaded) { updateStats(); rebuildUI(); } });
+}
 </script>
 </body>
 </html>
