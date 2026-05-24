@@ -136,8 +136,7 @@
 
   /* Path headers */
   .paths { display: flex; flex-direction: column; gap: 28px; }
-  .path { display: flex; flex-direction: column; align-items: stretch; }
-  .nodes-row { display: flex; flex-direction: row; align-items: center; overflow-x: auto; padding-bottom: 6px; }
+  .path { display: flex; flex-direction: column; align-items: center; }
   .path-header {
     font-family: 'Cinzel', serif;
     font-size: 0.75rem;
@@ -154,22 +153,21 @@
   .path-3 .path-header { color: var(--col3); border: 1px solid rgba(168,85,247,0.3); background: rgba(168,85,247,0.05); border-bottom: none; }
 
   /* Nodes */
-  .node-wrap { display: flex; flex-direction: row; align-items: center; flex-shrink: 0; }
+  .node-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
   .connector {
-    width: 14px;
-    height: 2px;
-    background: linear-gradient(to right, rgba(0,200,215,0.05), rgba(0,200,215,0.2));
+    width: 2px;
+    height: 28px;
+    background: linear-gradient(to bottom, rgba(0,200,215,0.15), rgba(0,200,215,0.05));
     flex-shrink: 0;
   }
-  .connector.active { background: linear-gradient(to right, rgba(0,200,215,0.3), rgba(0,200,215,0.8)); box-shadow: 0 0 6px rgba(0,200,215,0.5); }
-  .path-2 .connector { background: linear-gradient(to right, rgba(232,69,42,0.05), rgba(232,69,42,0.2)); }
-  .path-2 .connector.active { background: linear-gradient(to right, rgba(232,69,42,0.3), rgba(232,69,42,0.8)); box-shadow: 0 0 6px rgba(232,69,42,0.5); }
-  .path-3 .connector { background: linear-gradient(to right, rgba(168,85,247,0.05), rgba(168,85,247,0.2)); }
-  .path-3 .connector.active { background: linear-gradient(to right, rgba(168,85,247,0.3), rgba(168,85,247,0.8)); box-shadow: 0 0 6px rgba(168,85,247,0.5); }
+  .connector.active { background: linear-gradient(to bottom, rgba(0,200,215,0.7), rgba(0,200,215,0.3)); box-shadow: 0 0 6px rgba(0,200,215,0.5); }
+  .path-2 .connector { background: linear-gradient(to bottom, rgba(232,69,42,0.15), rgba(232,69,42,0.05)); }
+  .path-2 .connector.active { background: linear-gradient(to bottom, rgba(232,69,42,0.7), rgba(232,69,42,0.3)); box-shadow: 0 0 6px rgba(232,69,42,0.5); }
+  .path-3 .connector { background: linear-gradient(to bottom, rgba(168,85,247,0.15), rgba(168,85,247,0.05)); }
+  .path-3 .connector.active { background: linear-gradient(to bottom, rgba(168,85,247,0.7), rgba(168,85,247,0.3)); box-shadow: 0 0 6px rgba(168,85,247,0.5); }
 
   .node {
-    width: 180px;
-    flex-shrink: 0;
+    width: 100%;
     border-radius: 10px;
     padding: 12px 14px;
     cursor: not-allowed;
@@ -186,12 +184,11 @@
 
   /* Stat node */
   .node.stat-node {
-    width: 72px;
-    padding: 8px 6px;
+    padding: 8px 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 8px;
     border-radius: 8px;
     background: rgba(5,12,22,0.9);
   }
@@ -571,15 +568,6 @@
     .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 6px; padding: 12px 10px; }
     .stat-block .value { font-size: 1.25rem; }
     .paths { gap: 20px; }
-    .nodes-row { flex-direction: column; overflow-x: visible; align-items: stretch; }
-    .node-wrap { flex-direction: column; }
-    .connector { width: 2px; height: 18px; background: linear-gradient(to bottom, rgba(0,200,215,0.05), rgba(0,200,215,0.25)); }
-    .connector.active { background: linear-gradient(to bottom, rgba(0,200,215,0.3), rgba(0,200,215,0.8)); box-shadow: 0 0 5px rgba(0,200,215,0.4); }
-    .path-2 .connector { background: linear-gradient(to bottom, rgba(232,69,42,0.05), rgba(232,69,42,0.25)); }
-    .path-2 .connector.active { background: linear-gradient(to bottom, rgba(232,69,42,0.3), rgba(232,69,42,0.8)); box-shadow: 0 0 5px rgba(232,69,42,0.4); }
-    .path-3 .connector { background: linear-gradient(to bottom, rgba(168,85,247,0.05), rgba(168,85,247,0.25)); }
-    .path-3 .connector.active { background: linear-gradient(to bottom, rgba(168,85,247,0.3), rgba(168,85,247,0.8)); box-shadow: 0 0 5px rgba(168,85,247,0.4); }
-    .node, .node.stat-node { width: 100%; }
     .save-tool-btn { padding: 11px 20px; }
     .reset-btn { padding: 11px 28px; }
     .gh-fields input, .code-area textarea { font-size: 16px; }
@@ -588,9 +576,7 @@
   @media (hover: none) {
     .node.available:hover { transform: none; }
     .node.available:active { transform: scale(0.98); }
-    .save-tool-btn:hover { color: #3a5a7a; border-color: rgba(0,200,215,0.1); }
     .save-tool-btn:active { color: var(--col1); border-color: rgba(0,200,215,0.4); }
-    .reset-btn:hover { color: #4a7a9b; border-color: rgba(0,200,215,0.15); box-shadow: none; }
     .reset-btn:active { color: var(--col1); border-color: rgba(0,200,215,0.4); }
   }
 </style>
@@ -881,10 +867,6 @@ function rebuildUI() {
     hdr.innerHTML = path.name + '<br><span style="font-size:0.6rem;opacity:0.7;">' + path.sub + '</span>';
     col.appendChild(hdr);
 
-    const nodesRow = document.createElement('div');
-    nodesRow.className = 'nodes-row';
-    col.appendChild(nodesRow);
-
     path.nodes.forEach((node, ni) => {
       const wrap = document.createElement('div');
       wrap.className = 'node-wrap';
@@ -960,7 +942,7 @@ function rebuildUI() {
       }
 
       wrap.appendChild(el);
-      nodesRow.appendChild(wrap);
+      col.appendChild(wrap);
     });
 
     container.appendChild(col);
