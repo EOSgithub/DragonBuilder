@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telluric Dragon Cub — Skill Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0805;
+    --deep: #15100a;
+    --col1: #e89c1f;
+    --col2: #b66a2e;
+    --col3: #34d399;
+    --gold: #f0b429;
+    --locked: #2a1f15;
+    --locked-text: #6a523a;
+    --available-glow: 0 0 12px rgba(232,156,31,0.5);
+    --unlocked-glow: 0 0 20px rgba(232,156,31,0.8), 0 0 40px rgba(232,156,31,0.3);
+    --unique-glow: 0 0 20px rgba(52,211,153,0.8), 0 0 40px rgba(52,211,153,0.3);
+    --cap-glow: 0 0 20px rgba(240,180,41,0.9), 0 0 50px rgba(240,180,41,0.4);
+    --stat-glow: 0 0 12px rgba(232,156,31,0.6);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: #d4b78a;
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated subterranean cavern background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(180,80,20,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(120,60,10,0.25) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 30% at 85% 50%, rgba(40,80,40,0.2) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Drifting cave dust / ember particles */
+  .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(232,156,31,0.5);
+    box-shadow: 0 0 4px rgba(232,156,31,0.4);
+    animation: drift linear infinite;
+  }
+
+  @keyframes drift {
+    0%   { transform: translateY(110vh) translateX(0) scale(0); opacity: 0; }
+    10%  { opacity: 0.8; }
+    50%  { transform: translateY(50vh) translateX(20px) scale(1); }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-10px) translateX(-15px) scale(0.6); opacity: 0; }
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 30px 20px 60px; }
+
+  /* Header */
+  header { text-align: center; margin-bottom: 40px; }
+  header h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(232,156,31,0.8), 0 0 60px rgba(232,156,31,0.3);
+    letter-spacing: 2px;
+    line-height: 1.2;
+  }
+  header h1 span { color: var(--col1); }
+  header p {
+    margin-top: 8px;
+    font-size: 1rem;
+    color: #a08560;
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+    background: rgba(40,25,10,0.6);
+    border: 1px solid rgba(232,156,31,0.2);
+    border-radius: 12px;
+    padding: 14px 24px;
+    backdrop-filter: blur(4px);
+  }
+  .stat-block { text-align: center; }
+  .stat-block .label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    color: #8a6a40;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .stat-block .value {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--col1);
+    text-shadow: 0 0 10px rgba(232,156,31,0.6);
+    transition: all 0.3s;
+  }
+  .stat-block .modifier {
+    font-size: 0.75rem;
+    color: #b89868;
+  }
+  .stat-divider { width: 1px; background: rgba(232,156,31,0.15); align-self: stretch; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    font-size: 0.8rem;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; color: #a08560; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+  }
+
+  /* Path headers */
+  .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .path { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .path-header {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 8px 20px;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: 0;
+    text-align: center;
+    width: 100%;
+  }
+  .path-1 .path-header { color: var(--col1); border: 1px solid rgba(232,156,31,0.3); background: rgba(232,156,31,0.05); border-bottom: none; }
+  .path-2 .path-header { color: var(--col2); border: 1px solid rgba(182,106,46,0.4); background: rgba(182,106,46,0.06); border-bottom: none; }
+  .path-3 .path-header { color: var(--col3); border: 1px solid rgba(52,211,153,0.3); background: rgba(52,211,153,0.05); border-bottom: none; }
+
+  /* Nodes */
+  .node-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .connector {
+    width: 2px;
+    height: 28px;
+    background: linear-gradient(to bottom, rgba(232,156,31,0.15), rgba(232,156,31,0.05));
+    position: relative;
+    flex-shrink: 0;
+  }
+  .connector.active { background: linear-gradient(to bottom, rgba(232,156,31,0.7), rgba(232,156,31,0.3)); box-shadow: 0 0 6px rgba(232,156,31,0.5); }
+  .path-2 .connector { background: linear-gradient(to bottom, rgba(182,106,46,0.15), rgba(182,106,46,0.05)); }
+  .path-2 .connector.active { background: linear-gradient(to bottom, rgba(182,106,46,0.7), rgba(182,106,46,0.3)); box-shadow: 0 0 6px rgba(182,106,46,0.5); }
+  .path-3 .connector { background: linear-gradient(to bottom, rgba(52,211,153,0.15), rgba(52,211,153,0.05)); }
+  .path-3 .connector.active { background: linear-gradient(to bottom, rgba(52,211,153,0.7), rgba(52,211,153,0.3)); box-shadow: 0 0 6px rgba(52,211,153,0.5); }
+
+  .node {
+    width: 100%;
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    position: relative;
+    user-select: none;
+    border: 1px solid var(--locked);
+    background: rgba(25,18,10,0.8);
+  }
+  .node.available { cursor: pointer; }
+  .node.available:hover { transform: translateY(-2px); }
+
+  /* Stat node */
+  .node.stat-node {
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 8px;
+    background: rgba(18,12,6,0.9);
+  }
+  .stat-node .stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--locked-text);
+  }
+  .stat-node .stat-val {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--locked-text);
+  }
+
+  /* States */
+  .node.locked { opacity: 0.5; }
+
+  .node.available {
+    border-color: rgba(232,156,31,0.25);
+    opacity: 0.75;
+  }
+  .path-2 .node.available { border-color: rgba(182,106,46,0.3); }
+  .path-3 .node.available { border-color: rgba(52,211,153,0.25); }
+
+  .node.unlocked {
+    opacity: 1;
+    border-color: rgba(232,156,31,0.6);
+    background: rgba(232,156,31,0.06);
+    box-shadow: var(--unlocked-glow);
+  }
+  .path-2 .node.unlocked {
+    border-color: rgba(182,106,46,0.7);
+    background: rgba(182,106,46,0.07);
+    box-shadow: 0 0 20px rgba(182,106,46,0.6), 0 0 40px rgba(182,106,46,0.2);
+  }
+  .path-3 .node.unlocked {
+    border-color: rgba(52,211,153,0.6);
+    background: rgba(52,211,153,0.06);
+    box-shadow: var(--unique-glow);
+  }
+
+  .node.unique-node.unlocked {
+    border-color: rgba(52,211,153,0.8);
+    background: rgba(52,211,153,0.08);
+    box-shadow: var(--unique-glow);
+  }
+  .node.capstone.unlocked {
+    border-color: rgba(240,180,41,0.8);
+    background: rgba(240,180,41,0.06);
+    box-shadow: var(--cap-glow);
+  }
+
+  /* Stat node states */
+  .node.stat-node.unlocked .stat-label,
+  .node.stat-node.unlocked .stat-val { color: var(--col1); }
+  .path-2 .node.stat-node.unlocked .stat-label,
+  .path-2 .node.stat-node.unlocked .stat-val { color: var(--col2); }
+  .path-3 .node.stat-node.unlocked .stat-label,
+  .path-3 .node.stat-node.unlocked .stat-val { color: var(--col3); }
+  .node.stat-node.unlocked { box-shadow: none; }
+
+  /* Node content */
+  .node-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .node-icon { font-size: 1rem; flex-shrink: 0; }
+  .node-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--locked-text);
+    transition: color 0.3s;
+  }
+  .node.unlocked .node-name,
+  .node.available .node-name { color: #f0d8a8; }
+  .node.capstone .node-name { color: #e8c060; }
+  .node.unique-node .node-name { color: #80f0c0; }
+
+  .node-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 1.5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .unique-node .node-badge { background: rgba(52,211,153,0.2); color: #34d399; border: 1px solid rgba(52,211,153,0.4); }
+  .capstone .node-badge { background: rgba(240,180,41,0.15); color: var(--gold); border: 1px solid rgba(240,180,41,0.4); }
+
+  .node-desc {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--locked-text);
+    font-style: italic;
+    transition: color 0.3s;
+  }
+  .node.unlocked .node-desc,
+  .node.available .node-desc { color: #c0a070; }
+
+  .node-rule {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: transparent;
+    transition: color 0.3s;
+  }
+  .node.unlocked .node-rule { color: #e0c898; }
+  .node.available .node-rule { color: #8a7048; }
+
+  /* Capstone border */
+  .node.capstone {
+    border-style: dashed;
+    border-color: rgba(240,180,41,0.25);
+  }
+  .node.capstone::before {
+    content: '✦ CAPSTONE ✦';
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: rgba(240,180,41,0.5);
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg);
+    padding: 0 6px;
+    white-space: nowrap;
+  }
+  .node.capstone.unlocked::before { color: var(--gold); }
+
+  /* Unique node tag line */
+  .node.unique-node::after {
+    content: '◆ UNIQUE ◆';
+    font-family: 'Cinzel', serif;
+    font-size: 0.5rem;
+    letter-spacing: 2px;
+    color: rgba(52,211,153,0.4);
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg);
+    padding: 0 5px;
+    white-space: nowrap;
+  }
+  .node.unique-node.unlocked::after { color: #34d399; }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: rgba(15,10,5,0.97);
+    border: 1px solid rgba(232,156,31,0.4);
+    border-radius: 10px;
+    padding: 14px 18px;
+    width: 240px;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 0 20px rgba(232,156,31,0.2);
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip h4 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: #f0d8a8;
+    margin-bottom: 6px;
+  }
+  .tooltip p { font-size: 0.8rem; line-height: 1.45; color: #c0a070; font-style: italic; }
+
+  /* Reset btn */
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+  }
+  .reset-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a6a40;
+    background: transparent;
+    border: 1px solid rgba(232,156,31,0.15);
+    padding: 8px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .reset-btn:hover { color: var(--col1); border-color: rgba(232,156,31,0.4); box-shadow: 0 0 12px rgba(232,156,31,0.2); }
+
+  /* Progress bar */
+  .progress-area {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .progress-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: #8a6a40;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    height: 4px;
+    background: rgba(232,156,31,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--col1), #f0c878);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 6px rgba(232,156,31,0.6);
+  }
+
+  /* Back link */
+  .back-btn {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #7a5a30;
+    text-decoration: none;
+    padding: 6px 16px;
+    border: 1px solid rgba(232,156,31,0.12);
+    border-radius: 6px;
+    margin-bottom: 22px;
+    transition: all 0.3s;
+  }
+  .back-btn:hover { color: var(--col1); border-color: rgba(232,156,31,0.35); }
+
+  /* Save indicator */
+  .save-indicator {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    color: var(--col1);
+    opacity: 0;
+    transition: opacity 0.4s;
+    margin-top: 12px;
+  }
+
+  /* Save tools */
+  .save-tools {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .save-tool-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #6a4a20;
+    background: transparent;
+    border: 1px solid rgba(232,156,31,0.1);
+    padding: 6px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .save-tool-btn:hover { color: var(--col1); border-color: rgba(232,156,31,0.3); }
+
+  /* Code area */
+  .code-area {
+    margin-top: 14px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .code-area textarea {
+    width: 100%;
+    background: rgba(30,18,6,0.9);
+    border: 1px solid rgba(232,156,31,0.2);
+    border-radius: 6px;
+    color: #c0a070;
+    font-family: monospace;
+    font-size: 0.78rem;
+    padding: 8px 12px;
+    resize: vertical;
+    outline: none;
+    word-break: break-all;
+  }
+
+  @media (max-width: 700px) {
+    .paths { grid-template-columns: 1fr; }
+    .stat-divider { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="wrapper">
+  <header>
+    <a href="index.html" class="back-btn">← Wyrmling Codex</a>
+    <h1>⛰️ Telluric <span>Dragon</span> Cub</h1>
+    <p>Skill Tree — Level Up Your Wyrmling</p>
+  </header>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-block">
+      <div class="label">STR</div>
+      <div class="value" id="stat-STR">14</div>
+      <div class="modifier" id="mod-STR">(+2)</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-block">
+      <div class="label">DEX</div>
+      <div class="value" id="stat-DEX">8</div>
+      <div class="modifier" id="mod-DEX">(-1)</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-block">
+      <div class="label">CON</div>
+      <div class="value" id="stat-CON">16</div>
+      <div class="modifier" id="mod-CON">(+3)</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-block">
+      <div class="label">INT</div>
+      <div class="value" id="stat-INT">10</div>
+      <div class="modifier" id="mod-INT">(+0)</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-block">
+      <div class="label">WIS</div>
+      <div class="value" id="stat-WIS">12</div>
+      <div class="modifier" id="mod-WIS">(+1)</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-block">
+      <div class="label">CHA</div>
+      <div class="value" id="stat-CHA">8</div>
+      <div class="modifier" id="mod-CHA">(-1)</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-block">
+      <div class="label">Points</div>
+      <div class="value" id="pointsDisplay" style="color: #f0b429; text-shadow: 0 0 10px rgba(240,180,41,0.6);">0</div>
+      <div class="modifier">Spent</div>
+    </div>
+  </div>
+
+  <div class="progress-area">
+    <div class="progress-label">Mastery</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background: rgba(232,156,31,0.2); border: 1px solid rgba(232,156,31,0.4);"></div> Available</div>
+    <div class="legend-item"><div class="legend-dot" style="background: rgba(232,156,31,0.6); box-shadow: 0 0 6px rgba(232,156,31,0.8);"></div> Unlocked</div>
+    <div class="legend-item"><div class="legend-dot" style="background: rgba(52,211,153,0.4); border: 1px solid rgba(52,211,153,0.6);"></div> Unique</div>
+    <div class="legend-item"><div class="legend-dot" style="background: rgba(240,180,41,0.3); border: 1px solid rgba(240,180,41,0.5);"></div> Capstone</div>
+  </div>
+
+  <div class="paths" id="paths">
+    <!-- Rendered by JS -->
+  </div>
+
+  <div class="footer">
+    <button class="reset-btn" id="resetBtn">⟳ Reset All Nodes</button>
+    <div class="save-tools">
+      <button class="save-tool-btn" id="exportBtn">↑ Export Save Code</button>
+      <button class="save-tool-btn" id="importBtn">↓ Import Save Code</button>
+    </div>
+    <div class="code-area" id="codeArea">
+      <textarea id="codeInput" rows="3" placeholder="Incolla qui il tuo save code, poi clicca Carica"></textarea>
+      <button class="save-tool-btn" id="loadCodeBtn">Carica Codice</button>
+    </div>
+    <div class="save-indicator" id="saveIndicator">✓ Progresso salvato</div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <h4 id="tooltipTitle"></h4>
+  <p id="tooltipDesc"></p>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+
+const baseStats = { STR: 14, DEX: 8, CON: 16, INT: 10, WIS: 12, CHA: 8 };
+const currentStats = { ...baseStats };
+
+const paths = [
+  {
+    id: 'p1',
+    name: 'Seismic Breath Mastery',
+    sub: 'Constitution',
+    cls: 'path-1',
+    nodes: [
+      {
+        id: 'p1n1', type: 'ability',
+        icon: '🌋', name: 'Tremor Sense',
+        desc: 'The earth whispers its secrets through the soles of its feet.',
+        rule: 'The dragon gains <b>tremorsense (30ft)</b> and its breath weapon gains <b>recharge(6)</b>.',
+      },
+      { id: 'p1s1', type: 'stat', stat: 'CON', bonus: 1 },
+      {
+        id: 'p1n2', type: 'ability',
+        icon: '💥', name: 'Quake Roar',
+        desc: 'Its breath shakes the very foundations of stone.',
+        rule: 'The seismic breath cone increases to <b>20ft</b> and damage increases to <b>4d10 thunder</b>.',
+      },
+      { id: 'p1s2', type: 'stat', stat: 'CON', bonus: 1 },
+      {
+        id: 'p1n3', type: 'unique',
+        icon: '🧱', name: 'Sundering Bellow',
+        desc: 'Each cry rends the very ground beneath its prey.',
+        rule: 'On a <b>failed breath weapon save</b>, creatures are also <b>knocked prone</b>, and the affected area becomes <b>difficult terrain</b> (broken stone) until the end of combat.',
+      },
+      { id: 'p1s3', type: 'stat', stat: 'CON', bonus: 2 },
+      {
+        id: 'p1cap', type: 'capstone',
+        icon: '🌍', name: 'Cataclysm',
+        desc: 'The earth itself answers the dragon\'s call.',
+        rule: '<b>Once/Long Rest:</b> 60ft radius earthquake centered on the dragon. All creatures DEX save or take <b>6d10 bludgeoning damage</b> and be knocked prone (half damage & still standing on success). A 10ft-wide fissure opens at a point of the dragon\'s choice in the area; structures take maximum damage.',
+      },
+    ]
+  },
+  {
+    id: 'p2',
+    name: "Burrowing Onslaught",
+    sub: 'Strength',
+    cls: 'path-2',
+    nodes: [
+      {
+        id: 'p2n1', type: 'ability',
+        icon: '⛏️', name: 'Burrowing Claws',
+        desc: 'Stone is no barrier to the patient.',
+        rule: 'The dragon gains a <b>burrow speed of 20ft</b> through earth, sand, and gravel (cannot burrow through solid stone yet).',
+      },
+      { id: 'p2s1', type: 'stat', stat: 'STR', bonus: 1 },
+      {
+        id: 'p2n2', type: 'ability',
+        icon: '🦴', name: 'Bone Mace Tail',
+        desc: 'A tail forged like a mace — bone and stone fused into a single hammer.',
+        rule: '<b>New Attack:</b> Single target within 10ft, STR save. <b>2d8 + STR bludgeoning</b>; on a failure the target is also <b>stunned</b> until the end of their next turn.',
+      },
+      { id: 'p2s2', type: 'stat', stat: 'STR', bonus: 1 },
+      {
+        id: 'p2n3', type: 'unique',
+        icon: '🌑', name: 'Subterranean Ambush',
+        desc: 'It erupts from the earth like vengeance made flesh.',
+        rule: 'When the dragon emerges from a burrow within <b>10ft of a creature</b>, that creature must make a <b>DEX save</b> or take <b>4d6 bludgeoning damage</b> and be knocked prone. The dragon also has <b>advantage</b> on its first attack roll that turn.',
+      },
+      { id: 'p2s3', type: 'stat', stat: 'STR', bonus: 2 },
+      {
+        id: 'p2cap', type: 'capstone',
+        icon: '🔨', name: 'Earthshaker Strike',
+        desc: 'Each tail strike cracks the world a little further open.',
+        rule: 'The <b>Bone Mace Tail</b> now hits all creatures in a <b>15ft cone behind the dragon</b>. Damage increases to <b>4d8 + STR bludgeoning</b>. Targets that fail are <b>stunned</b> and pushed <b>10ft</b>. The point of impact becomes a 10ft-radius crater of difficult terrain.',
+      },
+    ]
+  },
+  {
+    id: 'p3',
+    name: 'Crystalline Defense',
+    sub: 'Dexterity',
+    cls: 'path-3',
+    nodes: [
+      {
+        id: 'p3n1', type: 'ability',
+        icon: '💎', name: 'Crystal Scales',
+        desc: 'Gemstones erupt from its hide, hard as adamantine.',
+        rule: 'The dragon gains <b>resistance to non-magical bludgeoning, piercing, and slashing</b>. Its base <b>AC increases by +1</b>.',
+      },
+      { id: 'p3s1', type: 'stat', stat: 'DEX', bonus: 1 },
+      {
+        id: 'p3n2', type: 'ability',
+        icon: '🔷', name: 'Refractive Hide',
+        desc: 'Light bends across its prismatic scales — and so do spells.',
+        rule: 'The dragon gains <b>advantage</b> on saving throws against spells and magical effects. The first spell that targets it each round has a <b>25% chance to be reflected</b> back at the caster.',
+      },
+      { id: 'p3s2', type: 'stat', stat: 'DEX', bonus: 1 },
+      {
+        id: 'p3n3', type: 'unique',
+        icon: '💢', name: 'Shattering Pushback',
+        desc: 'Strike the stone, and the stone strikes back.',
+        rule: '<b>Reaction:</b> When a creature within 10ft hits the dragon with a melee attack, the dragon releases a burst of crystal shards. The attacker takes <b>2d8 piercing damage</b> and must succeed on a <b>STR save</b> or be pushed <b>10ft</b> and knocked prone.',
+      },
+      { id: 'p3s3', type: 'stat', stat: 'DEX', bonus: 2 },
+      {
+        id: 'p3cap', type: 'capstone',
+        icon: '🛡️', name: 'Adamant Carapace',
+        desc: 'Becomes one with the bedrock — immovable, unbreakable.',
+        rule: '<b>Passive:</b> AC increases by another <b>+2</b>. The dragon becomes <b>immune to being moved against its will</b> (knocked prone, pushed, grappled). <b>1/Long Rest:</b> as a reaction to being reduced to 0 HP, the dragon instead drops to 1 HP and emits a 30ft shockwave (STR save or 4d10 bludgeoning & pushed 15ft).',
+      },
+    ]
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const unlocked = new Set();
+
+// ── PERSISTENCE ──────────────────────────────────────────────────────────────
+const SAVE_KEY = 'dragon_telluric';
+
+function saveState() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked]));
+    const ind = document.getElementById('saveIndicator');
+    if (ind) { ind.style.opacity = '1'; setTimeout(() => { ind.style.opacity = '0'; }, 2000); }
+  } catch(e) {}
+}
+
+// Load saved state on init
+try {
+  const saved = localStorage.getItem(SAVE_KEY);
+  if (saved) JSON.parse(saved).forEach(id => unlocked.add(id));
+} catch(e) {}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function modStr(v) {
+  const m = Math.floor((v - 10) / 2);
+  return (m >= 0 ? '+' : '') + m;
+}
+
+function isAvailable(pathIdx, nodeIdx) {
+  if (nodeIdx === 0) return true;
+  const prev = paths[pathIdx].nodes[nodeIdx - 1];
+  return unlocked.has(prev.id);
+}
+
+function updateStats() {
+  Object.assign(currentStats, baseStats);
+  for (const id of unlocked) {
+    for (const p of paths) {
+      for (const n of p.nodes) {
+        if (n.id === id && n.type === 'stat') {
+          currentStats[n.stat] = (currentStats[n.stat] || 0) + n.bonus;
+        }
+      }
+    }
+  }
+  for (const [k, v] of Object.entries(currentStats)) {
+    const el = document.getElementById('stat-' + k);
+    const mel = document.getElementById('mod-' + k);
+    if (el) { el.textContent = v; mel.textContent = '(' + modStr(v) + ')'; }
+  }
+  document.getElementById('pointsDisplay').textContent = unlocked.size;
+  const totalNodes = paths.reduce((s, p) => s + p.nodes.length, 0);
+  document.getElementById('progressFill').style.width = (unlocked.size / totalNodes * 100) + '%';
+}
+
+function rebuildUI() {
+  const container = document.getElementById('paths');
+  container.innerHTML = '';
+
+  paths.forEach((path, pi) => {
+    const col = document.createElement('div');
+    col.className = 'path ' + path.cls;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'path-header';
+    hdr.innerHTML = path.name + '<br><span style="font-size:0.6rem;opacity:0.7;">' + path.sub + '</span>';
+    col.appendChild(hdr);
+
+    path.nodes.forEach((node, ni) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'node-wrap';
+
+      // connector (not before first)
+      const conn = document.createElement('div');
+      conn.className = 'connector';
+      if (ni > 0 && unlocked.has(path.nodes[ni - 1].id) && unlocked.has(node.id)) {
+        conn.classList.add('active');
+      }
+      wrap.appendChild(conn);
+
+      const el = document.createElement('div');
+      const isUnlocked = unlocked.has(node.id);
+      const avail = isAvailable(pi, ni);
+
+      if (node.type === 'stat') {
+        el.className = 'node stat-node' + (isUnlocked ? ' unlocked' : avail ? ' available' : ' locked');
+        el.innerHTML = `<span class="stat-label">+${node.bonus} ${node.stat}</span>`;
+      } else {
+        let cls = 'node';
+        if (node.type === 'unique') cls += ' unique-node';
+        if (node.type === 'capstone') cls += ' capstone';
+        cls += isUnlocked ? ' unlocked' : avail ? ' available' : ' locked';
+        el.className = cls;
+
+        let badge = '';
+        if (node.type === 'unique') badge = `<span class="node-badge">UNIQUE</span>`;
+        if (node.type === 'capstone') badge = `<span class="node-badge">CAPSTONE</span>`;
+
+        el.innerHTML = `
+          <div class="node-title-row">
+            <span class="node-icon">${node.icon}</span>
+            <span class="node-name">${node.name}</span>
+            ${badge}
+          </div>
+          <div class="node-desc">${node.desc}</div>
+          <div class="node-rule">${node.rule}</div>
+        `;
+      }
+
+      if (avail || isUnlocked) {
+        el.addEventListener('click', () => {
+          if (isUnlocked) {
+            // Check if any later node in path is unlocked — if so, can't remove
+            const laterUnlocked = path.nodes.slice(ni + 1).some(n => unlocked.has(n.id));
+            if (laterUnlocked) return; // can't remove mid-chain
+            unlocked.delete(node.id);
+          } else {
+            unlocked.add(node.id);
+          }
+          saveState();
+          updateStats();
+          rebuildUI();
+        });
+
+        // Tooltip
+        if (node.type !== 'stat') {
+          el.addEventListener('mousemove', (e) => {
+            const tip = document.getElementById('tooltip');
+            document.getElementById('tooltipTitle').textContent = node.name;
+            document.getElementById('tooltipDesc').innerHTML = node.rule;
+            tip.classList.add('visible');
+            const x = Math.min(e.clientX + 16, window.innerWidth - 260);
+            const y = Math.min(e.clientY + 16, window.innerHeight - 200);
+            tip.style.left = x + 'px';
+            tip.style.top = y + 'px';
+          });
+          el.addEventListener('mouseleave', () => {
+            document.getElementById('tooltip').classList.remove('visible');
+          });
+        }
+      }
+
+      wrap.appendChild(el);
+      col.appendChild(wrap);
+    });
+
+    container.appendChild(col);
+  });
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset di tutti i nodi? Il progresso verrà cancellato.')) return;
+  unlocked.clear();
+  saveState();
+  updateStats();
+  rebuildUI();
+});
+
+// ── EXPORT / IMPORT ──────────────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const code = btoa(JSON.stringify([...unlocked]));
+  const area = document.getElementById('codeArea');
+  const input = document.getElementById('codeInput');
+  area.style.display = 'flex';
+  input.value = code;
+  input.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  alert('Save code copiato negli appunti!\n\nPuoi anche copiarlo manualmente dalla casella di testo.');
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  const area = document.getElementById('codeArea');
+  area.style.display = area.style.display === 'flex' ? 'none' : 'flex';
+  if (area.style.display === 'flex') document.getElementById('codeInput').value = '';
+});
+
+document.getElementById('loadCodeBtn').addEventListener('click', () => {
+  const code = document.getElementById('codeInput').value.trim();
+  if (!code) return;
+  try {
+    const ids = JSON.parse(atob(code));
+    if (!Array.isArray(ids)) throw new Error();
+    unlocked.clear();
+    ids.forEach(id => unlocked.add(id));
+    saveState();
+    updateStats();
+    rebuildUI();
+    document.getElementById('codeArea').style.display = 'none';
+    document.getElementById('codeInput').value = '';
+  } catch(e) {
+    alert('Codice non valido. Controlla e riprova.');
+  }
+});
+
+// ── PARTICLES ─────────────────────────────────────────────────────────────────
+(function() {
+  const cont = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = Math.random() * 3 + 1;
+    // Mix ember orange and crystal green motes
+    const isCrystal = Math.random() < 0.25;
+    const color = isCrystal ? 'rgba(52,211,153,0.5)' : 'rgba(232,156,31,0.5)';
+    const glow = isCrystal ? 'rgba(52,211,153,0.4)' : 'rgba(232,156,31,0.4)';
+    p.style.cssText = `
+      width:${s}px; height:${s}px;
+      left:${Math.random()*100}%;
+      background:${color};
+      box-shadow: 0 0 4px ${glow};
+      animation-duration:${Math.random()*20+10}s;
+      animation-delay:${Math.random()*20}s;
+      opacity:${Math.random()*0.5+0.1};
+    `;
+    cont.appendChild(p);
+  }
+})();
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateStats();
+rebuildUI();
+</script>
+</body>
+</html>
