@@ -204,8 +204,7 @@ const STAT_BONUSES = {
   p3s1: { stat: 'CHA', bonus: 1 }, p3s2: { stat: 'CHA', bonus: 1 }, p3s3: { stat: 'CHA', bonus: 2 },
 };
 
-const CON_MASTERY_IDS = ['p1s1', 'p1s2', 'p1s3'];
-const DEX_MASTERY_IDS = ['p2s1', 'p2s2', 'p2s3'];
+const OATHSWORN_LEVEL = 11;
 
 function getUnlocked() {
   try { const s = localStorage.getItem(SAVE_KEY); return new Set(s ? JSON.parse(s) : []); }
@@ -238,15 +237,11 @@ function render() {
   const wisMod = mod(stats.WIS);
   const chaMod = mod(stats.CHA);
 
-  // HP: base 48 + 10 per CON point from mastery
-  const conMasteryBonus = CON_MASTERY_IDS.reduce((acc, id) => unlocked.has(id) ? acc + STAT_BONUSES[id].bonus : acc, 0);
-  const hp = 48 + conMasteryBonus * 10;
-  const hpNote = conMasteryBonus > 0 ? `base 48 + ${conMasteryBonus * 10} mastery` : 'base';
+  const hp = conMod * 10 + OATHSWORN_LEVEL * 2;
+  const hpFormula = `CON ${signed(conMod)}×10 + Oathsworn Lv.${OATHSWORN_LEVEL}×2`;
 
-  // AC: base 16 + floor(total DEX mastery bonus / 2)
-  const dexMasteryBonus = DEX_MASTERY_IDS.reduce((acc, id) => unlocked.has(id) ? acc + STAT_BONUSES[id].bonus : acc, 0);
-  const ac = 16 + Math.floor(dexMasteryBonus / 2);
-  const acNote = ac > 16 ? `natural armor +${Math.floor(dexMasteryBonus / 2)} agility` : 'natural armor';
+  const ac = 13 + dexMod;
+  const acFormula = `13 + DEX ${signed(dexMod)}`;
 
   // DCs
   const breathDC = 8 + PROF + conMod;
@@ -273,8 +268,8 @@ function render() {
     <div class="sb-type"><em>Small Dragon (Wyrmling Cub), Neutral</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
-      <p><strong>Armor Class</strong> ${ac} (${acNote})</p>
-      <p><strong>Hit Points</strong> ${hp} (${hpNote})</p>
+      <p><strong>Armor Class</strong> ${ac} (${acFormula})</p>
+      <p><strong>Hit Points</strong> ${hp} (${hpFormula})</p>
       <p><strong>Speed</strong> 20 ft., swim 40 ft., fly 20 ft.</p>
     </div>
     <div class="sb-divider"></div>

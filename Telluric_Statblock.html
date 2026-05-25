@@ -197,7 +197,7 @@ const SAVE_KEY = 'dragon_telluric';
 const TOTAL = 21;
 const BASE = { STR: 14, DEX: 8, CON: 16, INT: 10, WIS: 12, CHA: 8 };
 const PROF = 2;
-const HD = 6;
+const OATHSWORN_LEVEL = 11;
 
 const STAT_BONUSES = {
   p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
@@ -233,19 +233,16 @@ function render() {
   const conMod = mod(stats.CON), dexMod = mod(stats.DEX);
   const strMod = mod(stats.STR), wisMod = mod(stats.WIS);
 
-  // HP: floor(6*4.5) = 27, formula 6d8
-  const hpBonus = HD * conMod;
-  const hpFormula = HD + 'd8' + (hpBonus > 0 ? '+' + hpBonus : hpBonus < 0 ? hpBonus : '');
-  const hp = 27 + hpBonus;
+  const hp = conMod * 10 + OATHSWORN_LEVEL * 2;
+  const hpFormula = `CON ${signed(conMod)}×10 + Oathsworn Lv.${OATHSWORN_LEVEL}×2`;
 
   const breathDC = 8 + PROF + conMod;
   const tailDC = 8 + PROF + strMod;
 
-  // AC
-  let ac = 14;
-  let acParts = ['natural armor'];
-  if (unlocked.has('p3n1')) { ac += 1; acParts.push('Crystal Scales'); }
-  if (unlocked.has('p3cap')) { ac += 2; acParts.push('Adamant Carapace'); }
+  let ac = 13 + dexMod;
+  let acFormula = `13 + DEX ${signed(dexMod)}`;
+  if (unlocked.has('p3n1')) { ac += 1; acFormula += ' +1'; }
+  if (unlocked.has('p3cap')) { ac += 2; acFormula += ' +2'; }
 
   // Breath weapon
   let breathCone = '15 ft.', breathDmg = '3d8 thunder';
@@ -271,7 +268,7 @@ function render() {
     <div class="sb-type"><em>Small Dragon, Neutral Good</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
-      <p><strong>Armor Class</strong> ${ac} (${acParts.join(', ')})</p>
+      <p><strong>Armor Class</strong> ${ac} (${acFormula})</p>
       <p><strong>Hit Points</strong> ${hp} (${hpFormula})</p>
       <p><strong>Speed</strong> ${speeds}</p>
     </div>
