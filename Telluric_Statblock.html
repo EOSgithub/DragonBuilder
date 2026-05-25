@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telluric Dragon — Stat Block</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0805;
+  --accent: #e89c1f;
+  --divider: rgba(232,156,31,0.3);
+  --text: #d4b78a;
+  --text-dim: #a08560;
+  --text-muted: #6a4a25;
+  --panel-bg: rgba(20,12,4,0.94);
+  --panel-border: rgba(232,156,31,0.2);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 70%, rgba(160,70,15,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 30%, rgba(80,40,10,0.2) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+.particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.particle { position: absolute; border-radius: 50%; animation: drift linear infinite; }
+@keyframes drift {
+  0%   { transform: translateY(110vh) translateX(0) scale(0); opacity: 0; }
+  10%  { opacity: 0.8; } 90% { opacity: 0.3; }
+  100% { transform: translateY(-10px) translateX(-10px) scale(0.7); opacity: 0; }
+}
+.wrapper {
+  position: relative; z-index: 1;
+  max-width: 680px; margin: 0 auto; padding: 40px 20px 60px;
+}
+.page-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 32px; gap: 12px;
+}
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-muted); text-decoration: none;
+  padding: 7px 16px; border: 1px solid rgba(232,156,31,0.12);
+  border-radius: 6px; transition: all 0.3s; white-space: nowrap;
+}
+.nav-btn:hover { color: var(--accent); border-color: rgba(232,156,31,0.38); }
+.dragon-header { text-align: center; margin-bottom: 22px; }
+.dragon-header .eyebrow {
+  font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 5px;
+  color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
+}
+.dragon-header h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.6rem, 5vw, 2.6rem); font-weight: 900; color: #fff;
+  text-shadow: 0 0 30px rgba(232,156,31,0.7), 0 0 60px rgba(232,156,31,0.2);
+  letter-spacing: 2px; margin-bottom: 6px;
+}
+.dragon-header .subtitle {
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  color: var(--text-dim); letter-spacing: 2px;
+}
+.mastery-badge {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-bottom: 24px;
+}
+.mastery-badge .count {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 2px; color: var(--text-muted); white-space: nowrap;
+}
+.mastery-bar-bg {
+  flex: 1; max-width: 220px; height: 3px;
+  background: rgba(232,156,31,0.1); border-radius: 2px; overflow: hidden;
+}
+.mastery-bar-fill {
+  height: 100%; background: linear-gradient(to right, var(--accent), #f0c878);
+  border-radius: 2px; box-shadow: 0 0 6px rgba(232,156,31,0.5);
+  transition: width 0.5s ease;
+}
+.statblock {
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: 4px; overflow: hidden;
+  box-shadow: 0 0 40px rgba(232,156,31,0.06), 0 8px 40px rgba(0,0,0,0.5);
+}
+.statblock::before, .statblock::after {
+  content: ''; display: block; height: 5px;
+  background: linear-gradient(to right, transparent, rgba(232,156,31,0.7), rgba(232,156,31,0.4), rgba(232,156,31,0.7), transparent);
+  opacity: 0.6;
+}
+.sb-inner { padding: 20px 26px; }
+.sb-name {
+  font-family: 'Cinzel Decorative', serif; font-size: 1.25rem; font-weight: 700;
+  color: var(--accent); text-shadow: 0 0 14px rgba(232,156,31,0.35); margin-bottom: 2px;
+}
+.sb-type { font-size: 0.9rem; font-style: italic; color: var(--text-dim); margin-bottom: 12px; }
+.sb-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--divider), transparent);
+  margin: 13px 0;
+}
+.sb-divider-thin { height: 1px; background: rgba(232,156,31,0.07); margin: 9px 0; }
+.sb-basics p { font-size: 0.9rem; line-height: 1.75; }
+.sb-basics p strong {
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  letter-spacing: 1px; color: var(--accent);
+}
+.sb-scores {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  text-align: center; gap: 4px; margin: 14px 0;
+}
+.sb-score-cell { padding: 6px 2px; }
+.sb-score-label {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 2px; color: var(--accent); margin-bottom: 4px;
+}
+.sb-score-val {
+  font-family: 'Cinzel Decorative', serif; font-size: 1rem;
+  font-weight: 700; color: #fff;
+}
+.sb-score-mod { font-size: 0.78rem; color: var(--text-dim); }
+.sb-prop { font-size: 0.88rem; line-height: 1.7; }
+.sb-prop strong {
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  letter-spacing: 1px; color: var(--accent);
+}
+.sb-section-title {
+  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--accent);
+  border-bottom: 1px solid rgba(232,156,31,0.2);
+  padding-bottom: 6px; margin-bottom: 12px; margin-top: 14px;
+}
+.sb-ability { margin-bottom: 10px; }
+.sb-ability-name {
+  font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 600;
+  font-style: italic; color: var(--text);
+}
+.sb-ability-name .tag {
+  font-style: normal; font-size: 0.7rem;
+  color: var(--text-dim); margin-left: 2px;
+}
+.sb-ability p { font-size: 0.87rem; line-height: 1.55; color: #c0a070; margin-top: 3px; }
+.sb-ability p b { color: var(--text); }
+.sb-locked-hint {
+  font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 2px;
+  color: var(--text-muted); text-align: center; margin-top: 16px; opacity: 0.6;
+}
+@media (max-width: 500px) {
+  .sb-score-label { font-size: 0.58rem; letter-spacing: 1px; }
+  .sb-score-val { font-size: 0.9rem; }
+  .sb-name { font-size: 1.05rem; }
+  .page-nav { flex-wrap: wrap; justify-content: center; }
+}
+@media (hover: none) { .nav-btn:active { color: var(--accent); } }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="wrapper">
+  <nav class="page-nav">
+    <a href="index.html" class="nav-btn">← Wyrmling Codex</a>
+    <a href="Telluric_Skill_Tree.html" class="nav-btn">Skill Tree →</a>
+  </nav>
+
+  <div class="dragon-header">
+    <div class="eyebrow">⛰️ Earthborn Wyrmling</div>
+    <h1>Telluric Dragon</h1>
+    <div class="subtitle">Stat Block — Current Form</div>
+  </div>
+
+  <div class="mastery-badge">
+    <span class="count" id="masteryCount">0 / 21 Mastery</span>
+    <div class="mastery-bar-bg"><div class="mastery-bar-fill" id="masteryFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="statblock">
+    <div class="sb-inner" id="sbInner"></div>
+  </div>
+
+  <div class="sb-locked-hint">Sblocca le mastery nella Skill Tree per potenziare il drago</div>
+</div>
+
+<script>
+const SAVE_KEY = 'dragon_telluric';
+const TOTAL = 21;
+const BASE = { STR: 14, DEX: 8, CON: 16, INT: 10, WIS: 12, CHA: 8 };
+const PROF = 2;
+const HD = 6;
+
+const STAT_BONUSES = {
+  p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
+  p2s1: { stat: 'STR', bonus: 1 }, p2s2: { stat: 'STR', bonus: 1 }, p2s3: { stat: 'STR', bonus: 2 },
+  p3s1: { stat: 'DEX', bonus: 1 }, p3s2: { stat: 'DEX', bonus: 1 }, p3s3: { stat: 'DEX', bonus: 2 },
+};
+
+function getUnlocked() {
+  try { const s = localStorage.getItem(SAVE_KEY); return new Set(s ? JSON.parse(s) : []); }
+  catch(e) { return new Set(); }
+}
+
+function mod(v) { return Math.floor((v - 10) / 2); }
+function modStr(v) { const m = mod(v); return (m >= 0 ? '+' : '') + m; }
+function signed(n) { return (n >= 0 ? '+' : '') + n; }
+
+function computeStats(unlocked) {
+  const stats = { ...BASE };
+  for (const [id, nb] of Object.entries(STAT_BONUSES)) {
+    if (unlocked.has(id)) stats[nb.stat] += nb.bonus;
+  }
+  return stats;
+}
+
+function render() {
+  const unlocked = getUnlocked();
+  const stats = computeStats(unlocked);
+  const count = unlocked.size;
+
+  document.getElementById('masteryCount').textContent = count + ' / ' + TOTAL + ' Mastery';
+  document.getElementById('masteryFill').style.width = (count / TOTAL * 100) + '%';
+
+  const conMod = mod(stats.CON), dexMod = mod(stats.DEX);
+  const strMod = mod(stats.STR), wisMod = mod(stats.WIS);
+
+  // HP: floor(6*4.5) = 27, formula 6d8
+  const hpBonus = HD * conMod;
+  const hpFormula = HD + 'd8' + (hpBonus > 0 ? '+' + hpBonus : hpBonus < 0 ? hpBonus : '');
+  const hp = 27 + hpBonus;
+
+  const breathDC = 8 + PROF + conMod;
+  const tailDC = 8 + PROF + strMod;
+
+  // AC
+  let ac = 14;
+  let acParts = ['natural armor'];
+  if (unlocked.has('p3n1')) { ac += 1; acParts.push('Crystal Scales'); }
+  if (unlocked.has('p3cap')) { ac += 2; acParts.push('Adamant Carapace'); }
+
+  // Breath weapon
+  let breathCone = '15 ft.', breathDmg = '3d8 thunder';
+  let breathRecharge = 'Recharge 5–6';
+  if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
+  if (unlocked.has('p1n2')) { breathCone = '20 ft.'; breathDmg = '4d10 thunder'; }
+
+  // Speed
+  let speeds = '30 ft., fly 60 ft.';
+  if (unlocked.has('p2n1')) speeds += ', burrow 20 ft.';
+
+  const biteHit = signed(strMod + PROF);
+  const biteDmg = '1d8' + (strMod >= 0 ? '+' : '') + strMod + ' piercing';
+
+  // Resistances
+  const resistances = [];
+  if (unlocked.has('p3n1')) resistances.push('bludgeoning, piercing, and slashing from nonmagical attacks');
+
+  // ── Build HTML ────────────────────────────────────────────────────────────
+
+  let html = `
+    <div class="sb-name">Telluric Dragon Wyrmling</div>
+    <div class="sb-type"><em>Small Dragon, Neutral Good</em></div>
+    <div class="sb-divider"></div>
+    <div class="sb-basics">
+      <p><strong>Armor Class</strong> ${ac} (${acParts.join(', ')})</p>
+      <p><strong>Hit Points</strong> ${hp} (${hpFormula})</p>
+      <p><strong>Speed</strong> ${speeds}</p>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-scores">`;
+
+  for (const k of ['STR','DEX','CON','INT','WIS','CHA']) {
+    html += `<div class="sb-score-cell">
+      <div class="sb-score-label">${k}</div>
+      <div class="sb-score-val">${stats[k]}</div>
+      <div class="sb-score-mod">${modStr(stats[k])}</div>
+    </div>`;
+  }
+
+  html += `</div><div class="sb-divider"></div>`;
+  html += `<p class="sb-prop"><strong>Saving Throws</strong> Str ${signed(strMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
+  html += `<p class="sb-prop"><strong>Skills</strong> Perception ${signed(wisMod + PROF)}, Athletics ${signed(strMod + PROF)}</p>`;
+  if (resistances.length) html += `<p class="sb-prop"><strong>Damage Resistances</strong> ${resistances.join('; ')}</p>`;
+  let senses = 'Darkvision 60 ft.';
+  if (unlocked.has('p1n1')) senses = 'Tremorsense 30 ft., ' + senses;
+  html += `<p class="sb-prop"><strong>Senses</strong> ${senses}, Passive Perception ${10 + wisMod + PROF}</p>`;
+  html += `<p class="sb-prop"><strong>Languages</strong> Draconic</p>`;
+  html += `<p class="sb-prop"><strong>Challenge</strong> 3 (700 XP) &nbsp;·&nbsp; <strong>Proficiency Bonus</strong> +${PROF}</p>`;
+  html += `<div class="sb-divider"></div>`;
+
+  // ── Traits ────────────────────────────────────────────────────────────────
+
+  if (unlocked.has('p3n1')) {
+    html += `<div class="sb-ability"><span class="sb-ability-name">Crystal Scales.</span>
+      <p>Gemstones protrude from the dragon's hide. It gains <b>resistance to bludgeoning, piercing, and slashing damage from nonmagical attacks</b>, and its AC increases by <b>+1</b> (already applied above).</p></div>`;
+  }
+
+  if (unlocked.has('p3n2')) {
+    html += `<div class="sb-ability"><span class="sb-ability-name">Refractive Hide.</span>
+      <p>The dragon has <b>advantage</b> on saving throws against spells and magical effects. The first spell that targets it each round has a <b>25% chance</b> to be reflected back at the caster (roll 1d4; on a 1, the spell is redirected).</p></div>`;
+  }
+
+  if (unlocked.has('p2n3')) {
+    html += `<div class="sb-ability"><span class="sb-ability-name">Subterranean Ambush.</span>
+      <p>When the dragon emerges from a burrow within <b>10 ft. of a creature</b>, that creature must make a <b>DEX save (DC ${tailDC})</b> or take <b>4d6 bludgeoning damage</b> and be knocked <b>prone</b>. The dragon also has <b>advantage</b> on its first attack roll this turn.</p></div>`;
+  }
+
+  if (unlocked.has('p3cap')) {
+    html += `<div class="sb-ability"><span class="sb-ability-name">Adamant Carapace.</span>
+      <p>The dragon's AC increases by an additional <b>+2</b> (already applied above). The dragon is <b>immune to being moved against its will</b> (it cannot be knocked prone, pushed, or grappled). <b>1/Long Rest (Reaction):</b> When reduced to 0 HP, the dragon drops to <b>1 HP</b> instead and emits a 30 ft. shockwave — creatures must succeed on a <b>STR save (DC ${tailDC})</b> or take <b>4d10 bludgeoning damage</b> and be pushed <b>15 ft.</b></p></div>`;
+  }
+
+  html += `<div class="sb-divider"></div>`;
+
+  // ── Actions ───────────────────────────────────────────────────────────────
+  html += `<div class="sb-section-title">Actions</div>`;
+
+  html += `<div class="sb-ability">
+    <span class="sb-ability-name">Bite. <span class="tag">Melee Weapon Attack:</span></span>
+    <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${biteDmg}.</p>
+  </div>`;
+
+  if (unlocked.has('p2n2') && !unlocked.has('p2cap')) {
+    const tailDmg = '2d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
+    html += `<div class="sb-ability">
+      <span class="sb-ability-name">Bone Mace Tail. <span class="tag">Melee Weapon Attack:</span></span>
+      <p>${biteHit} to hit, reach 10 ft., one target. <b>Hit:</b> ${tailDmg}. The target must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>stunned</b> until the end of its next turn.</p>
+    </div>`;
+  }
+
+  if (unlocked.has('p2cap')) {
+    const tailDmg = '4d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
+    html += `<div class="sb-ability">
+      <span class="sb-ability-name">Earthshaker Strike. <span class="tag">Melee Weapon Attack:</span></span>
+      <p>The dragon's tail crashes down in a <b>15 ft. cone behind it</b>. Each creature in the area must make a <b>STR save (DC ${tailDC})</b>. On a failure: <b>${tailDmg}</b>, <b>stunned</b> until end of next turn, and pushed <b>10 ft.</b> On a success, half damage only. The point of impact becomes a <b>10 ft. radius of difficult terrain</b> (rubble).</p>
+    </div>`;
+  }
+
+  let breathExtra = '';
+  if (unlocked.has('p1n3')) {
+    breathExtra = ' On a failed save, the creature is also <b>knocked prone</b> and the affected area becomes <b>difficult terrain</b> (broken stone) until the end of combat.';
+  }
+  html += `<div class="sb-ability">
+    <span class="sb-ability-name">Seismic Breath <span class="tag">(${breathRecharge}).</span></span>
+    <p>The dragon exhales a concussive roar in a ${breathCone} cone. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathExtra}</p>
+  </div>`;
+
+  if (unlocked.has('p1cap')) {
+    html += `<div class="sb-ability">
+      <span class="sb-ability-name">Cataclysm <span class="tag">(1/Long Rest).</span></span>
+      <p>The dragon triggers a massive earthquake in a <b>60 ft. radius</b> centered on itself. All creatures in the area must make a <b>DEX save (DC ${breathDC})</b>. On a failure, they take <b>6d10 bludgeoning damage</b> and are knocked <b>prone</b>; half damage and remain standing on a success. A <b>10 ft.-wide fissure</b> opens at a point of the dragon's choice within the area. Structures in the area take maximum damage.</p>
+    </div>`;
+  }
+
+  // ── Reactions ─────────────────────────────────────────────────────────────
+  if (unlocked.has('p3n3')) {
+    html += `<div class="sb-section-title">Reactions</div>`;
+    html += `<div class="sb-ability">
+      <span class="sb-ability-name">Shattering Pushback.</span>
+      <p>When a creature within <b>10 ft.</b> hits the dragon with a melee attack, the dragon releases a burst of crystal shards. The attacker takes <b>2d8 piercing damage</b> and must succeed on a <b>STR save (DC ${tailDC})</b> or be pushed <b>10 ft.</b> and knocked <b>prone</b>.</p>
+    </div>`;
+  }
+
+  html += `<div class="sb-divider-thin"></div>`;
+
+  document.getElementById('sbInner').innerHTML = html;
+}
+
+render();
+window.addEventListener('pageshow', e => { if (e.persisted) render(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
+
+(function() {
+  const cont = document.getElementById('particles');
+  for (let i = 0; i < 35; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = Math.random() * 2 + 0.5;
+    const isCrystal = Math.random() < 0.25;
+    const color = isCrystal ? `rgba(52,211,153,${Math.random()*0.25+0.05})` : `rgba(232,156,31,${Math.random()*0.28+0.05})`;
+    p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${color};animation-duration:${Math.random()*22+10}s;animation-delay:${Math.random()*22}s;`;
+    cont.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>

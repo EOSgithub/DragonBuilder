@@ -345,7 +345,7 @@
 
   <div class="dragons">
 
-    <a class="dragon-card card-abyssal" href="Abyssal_Skill_Tree.html">
+    <a class="dragon-card card-abyssal" href="Abyssal_Statblock.html">
       <div class="dragon-emoji">⚫</div>
       <div class="dragon-name">Abyssal Dragon</div>
       <div class="dragon-type">Deep Sea Wyrmling</div>
@@ -359,10 +359,10 @@
           <div class="progress-bar-fill" id="abyssalBar" style="width:0%"></div>
         </div>
       </div>
-      <span class="open-btn">Open Skill Tree →</span>
+      <span class="open-btn">View Stat Block →</span>
     </a>
 
-    <a class="dragon-card card-telluric" href="Telluric_Skill_Tree.html">
+    <a class="dragon-card card-telluric" href="Telluric_Statblock.html">
       <div class="dragon-emoji">⛰️</div>
       <div class="dragon-name">Telluric Dragon</div>
       <div class="dragon-type">Earthborn Wyrmling</div>
@@ -376,7 +376,7 @@
           <div class="progress-bar-fill" id="telluricBar" style="width:0%"></div>
         </div>
       </div>
-      <span class="open-btn">Open Skill Tree →</span>
+      <span class="open-btn">View Stat Block →</span>
     </a>
 
   </div>
@@ -400,8 +400,22 @@ function loadProgress(key, barId, countId) {
   } catch(e) {}
 }
 
-loadProgress('dragon_abyssal', 'abyssalBar', 'abyssalCount');
-loadProgress('dragon_telluric', 'telluricBar', 'telluricCount');
+function refreshAll() {
+  loadProgress('dragon_villis', 'abyssalBar', 'abyssalCount');
+  loadProgress('dragon_telluric', 'telluricBar', 'telluricCount');
+}
+
+refreshAll();
+
+// Aggiorna quando si torna con il pulsante indietro (bfcache)
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) refreshAll();
+});
+
+// Aggiorna quando la tab ritorna in primo piano
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') refreshAll();
+});
 
 // Particles
 (function() {
