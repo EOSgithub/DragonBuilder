@@ -195,15 +195,17 @@ body::before {
 <script>
 const SAVE_KEY = 'dragon_villis';
 const TOTAL = 21;
-const BASE = { STR: 10, DEX: 16, CON: 14, INT: 8, WIS: 10, CHA: 12 };
-const PROF = 2;
-const HD = 5;
+const BASE = { STR: 10, DEX: 16, CON: 14, INT: 8, WIS: 12, CHA: 10 };
+const PROF = 3;
 
 const STAT_BONUSES = {
   p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
   p2s1: { stat: 'DEX', bonus: 1 }, p2s2: { stat: 'DEX', bonus: 1 }, p2s3: { stat: 'DEX', bonus: 2 },
   p3s1: { stat: 'CHA', bonus: 1 }, p3s2: { stat: 'CHA', bonus: 1 }, p3s3: { stat: 'CHA', bonus: 2 },
 };
+
+const CON_MASTERY_IDS = ['p1s1', 'p1s2', 'p1s3'];
+const DEX_MASTERY_IDS = ['p2s1', 'p2s2', 'p2s3'];
 
 function getUnlocked() {
   try { const s = localStorage.getItem(SAVE_KEY); return new Set(s ? JSON.parse(s) : []); }
@@ -230,41 +232,50 @@ function render() {
   document.getElementById('masteryCount').textContent = count + ' / ' + TOTAL + ' Mastery';
   document.getElementById('masteryFill').style.width = (count / TOTAL * 100) + '%';
 
-  const conMod = mod(stats.CON), dexMod = mod(stats.DEX);
-  const strMod = mod(stats.STR), wisMod = mod(stats.WIS), chaMod = mod(stats.CHA);
+  const conMod = mod(stats.CON);
+  const dexMod = mod(stats.DEX);
+  const strMod = mod(stats.STR);
+  const wisMod = mod(stats.WIS);
+  const chaMod = mod(stats.CHA);
 
-  // HP: floor(5*4.5) = 22, formula 5d8
-  const hpBonus = HD * conMod;
-  const hpFormula = HD + 'd8' + (hpBonus > 0 ? '+' + hpBonus : hpBonus < 0 ? hpBonus : '');
-  const hp = 22 + hpBonus;
+  // HP: base 48 + 10 per CON point from mastery
+  const conMasteryBonus = CON_MASTERY_IDS.reduce((acc, id) => unlocked.has(id) ? acc + STAT_BONUSES[id].bonus : acc, 0);
+  const hp = 48 + conMasteryBonus * 10;
+  const hpNote = conMasteryBonus > 0 ? `base 48 + ${conMasteryBonus * 10} mastery` : 'base';
 
+  // AC: base 16 + floor(total DEX mastery bonus / 2)
+  const dexMasteryBonus = DEX_MASTERY_IDS.reduce((acc, id) => unlocked.has(id) ? acc + STAT_BONUSES[id].bonus : acc, 0);
+  const ac = 16 + Math.floor(dexMasteryBonus / 2);
+  const acNote = ac > 16 ? `natural armor +${Math.floor(dexMasteryBonus / 2)} agility` : 'natural armor';
+
+  // DCs
   const breathDC = 8 + PROF + conMod;
-  const auraDC = 8 + PROF + chaMod;
+  const auraDC   = 8 + PROF + chaMod;
 
-  let breathCone = '15 ft.', breathDmg = '3d8 cold';
-  let breathRecharge = 'Recharge 5–6';
+  // Breath weapon
+  let breathRecharge = '1/Short Rest';
+  let breathCone = '15 ft.';
+  let breathDmg  = '3d10 cold';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
   if (unlocked.has('p1n2')) { breathCone = '20 ft.'; breathDmg = '4d10 cold'; }
 
-  let auraRange = '10 ft.';
-  if (unlocked.has('p3cap')) auraRange = '20 ft.';
+  // Aura range
+  const auraRange = unlocked.has('p3cap') ? '20 ft.' : '5 ft.';
 
-  const biteHit = signed(dexMod + PROF);
-  const biteDmg = '1d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' piercing';
-
-  const resistances = [];
-  if (unlocked.has('p1n1')) resistances.push('cold');
+  // Attack
+  const rendHit = signed(dexMod + PROF);
+  const rendDmg = '2d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' slashing';
 
   // ── Build HTML ────────────────────────────────────────────────────────────
 
   let html = `
-    <div class="sb-name">Abyssal Dragon Wyrmling</div>
-    <div class="sb-type"><em>Small Dragon, Neutral</em></div>
+    <div class="sb-name">Abyssal Dragon Wyrmling — Villis</div>
+    <div class="sb-type"><em>Small Dragon (Wyrmling Cub), Neutral</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
-      <p><strong>Armor Class</strong> 13 (natural armor)</p>
-      <p><strong>Hit Points</strong> ${hp} (${hpFormula})</p>
-      <p><strong>Speed</strong> 30 ft., fly 60 ft., swim 60 ft.</p>
+      <p><strong>Armor Class</strong> ${ac} (${acNote})</p>
+      <p><strong>Hit Points</strong> ${hp} (${hpNote})</p>
+      <p><strong>Speed</strong> 20 ft., swim 40 ft., fly 20 ft.</p>
     </div>
     <div class="sb-divider"></div>
     <div class="sb-scores">`;
@@ -280,29 +291,32 @@ function render() {
   html += `</div><div class="sb-divider"></div>`;
   html += `<p class="sb-prop"><strong>Saving Throws</strong> Dex ${signed(dexMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
   html += `<p class="sb-prop"><strong>Skills</strong> Perception ${signed(wisMod + PROF)}, Stealth ${signed(dexMod + PROF)}</p>`;
-  if (resistances.length) html += `<p class="sb-prop"><strong>Damage Resistances</strong> ${resistances.join(', ')}</p>`;
+  html += `<p class="sb-prop"><strong>Damage Resistances</strong> bludgeoning (Pressure Aura)`;
+  if (unlocked.has('p1n1')) html += ', cold';
+  html += `</p>`;
   html += `<p class="sb-prop"><strong>Senses</strong> Blindsight 10 ft., Darkvision 60 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
   html += `<p class="sb-prop"><strong>Languages</strong> Draconic</p>`;
-  html += `<p class="sb-prop"><strong>Challenge</strong> 2 (450 XP) &nbsp;·&nbsp; <strong>Proficiency Bonus</strong> +${PROF}</p>`;
+  html += `<p class="sb-prop"><strong>Challenge</strong> — &nbsp;·&nbsp; <strong>Proficiency Bonus</strong> +${PROF}</p>`;
   html += `<div class="sb-divider"></div>`;
 
   // ── Traits ────────────────────────────────────────────────────────────────
 
-  // Pressure Aura (always present, masteries enhance it)
-  let auraDesc = `The dragon exudes crushing pressure in a <b>${auraRange} radius</b>.`;
+  // Pressure Aura — always present, masteries enhance it
+  let auraEffects = [];
   if (!unlocked.has('p3n2')) {
-    auraDesc += ' Creatures within treat the area as <b>difficult terrain</b>.';
+    auraEffects.push('The area within the aura is considered <b>difficult terrain</b> for hostile creatures.');
   } else {
-    auraDesc += ' Hostile creatures that start their turn in the aura have their <b>speed halved</b> and have <b>disadvantage</b> on STR and DEX saving throws until the end of their next turn.';
+    auraEffects.push('Hostile creatures that start their turn in the aura have their <b>speed halved</b> and have <b>disadvantage</b> on STR and DEX saving throws until the end of their next turn.');
   }
   if (unlocked.has('p3n1')) {
-    auraDesc += ` Hostile creatures that start their turn in the aura must also succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>frightened</b> until the end of that turn.`;
+    auraEffects.push(`Hostile creatures that start their turn in the aura must also succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>frightened</b> until the end of that turn.`);
   }
   if (unlocked.has('p3cap')) {
     const xDice = Math.max(1, Math.floor(count / 7));
-    auraDesc += ` Creatures that start their turn in the aura take <b>${xDice}d12 force damage</b>.`;
+    auraEffects.push(`Creatures that start their turn in the aura take <b>${xDice}d12 force damage</b>.`);
   }
-  html += `<div class="sb-ability"><span class="sb-ability-name">Pressure Aura.</span><p>${auraDesc}</p></div>`;
+  html += `<div class="sb-ability"><span class="sb-ability-name">Pressure Aura.</span>
+    <p>The wyrmling exudes crushing abyssal pressure in a <b>${auraRange} radius</b>. It gains <b>resistance to bludgeoning damage</b>. ${auraEffects.join(' ')}</p></div>`;
 
   if (unlocked.has('p2n3')) {
     html += `<div class="sb-ability"><span class="sb-ability-name">Blood Frenzy.</span>
@@ -321,21 +335,13 @@ function render() {
 
   if (unlocked.has('p2n1')) {
     html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span>
-      <p>The dragon makes two attacks: one with its <b>Bite</b> and one with its <b>Claws</b>.</p></div>`;
+      <p>The dragon makes two <b>Rend</b> attacks.</p></div>`;
   }
 
   html += `<div class="sb-ability">
-    <span class="sb-ability-name">Bite. <span class="tag">Melee Weapon Attack:</span></span>
-    <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${biteDmg}.</p>
+    <span class="sb-ability-name">Rend. <span class="tag">Melee Weapon Attack:</span></span>
+    <p>${rendHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${rendDmg}.</p>
   </div>`;
-
-  if (unlocked.has('p2n1')) {
-    const clawDmg = '1d4' + (dexMod >= 0 ? '+' : '') + dexMod + ' slashing';
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Claws. <span class="tag">Melee Weapon Attack:</span></span>
-      <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${clawDmg}.</p>
-    </div>`;
-  }
 
   if (unlocked.has('p2n2')) {
     const tailDmg = '2d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' bludgeoning';
@@ -345,13 +351,14 @@ function render() {
     </div>`;
   }
 
-  let breathExtra = '';
+  // Hadal Breath Weapon
+  let breathExtra = ' A creature that fails also <b>cannot speak</b> until the end of its next turn, as the cold steals the breath from its lungs.';
   if (unlocked.has('p1n3')) {
-    breathExtra = ' On a failed save, the creature is also <b>slowed</b> (speed halved, −2 AC and DEX saves, no reactions) until the end of its next turn.';
+    breathExtra += ' It is also <b>slowed</b> (speed halved, −2 AC and DEX saves, no reactions) until the end of its next turn.';
   }
   html += `<div class="sb-ability">
-    <span class="sb-ability-name">Cold Breath <span class="tag">(${breathRecharge}).</span></span>
-    <p>The dragon exhales a ${breathCone} cone of freezing black water. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathExtra}</p>
+    <span class="sb-ability-name">Hadal Breath <span class="tag">(${breathRecharge}).</span></span>
+    <p>The dragon exhales a ${breathCone} cone of freezing abyssal water. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathExtra}</p>
   </div>`;
 
   if (unlocked.has('p3n3')) {
@@ -369,7 +376,6 @@ function render() {
   }
 
   html += `<div class="sb-divider-thin"></div>`;
-
   document.getElementById('sbInner').innerHTML = html;
 }
 
