@@ -175,7 +175,7 @@ body::before {
   </nav>
 
   <div class="dragon-header">
-    <div class="eyebrow">⛰️ Earthborn Wyrmling</div>
+    <div class="eyebrow" id="stageEyebrow">⛰️ Earthborn Wyrmling</div>
     <h1>Telluric Dragon</h1>
     <div class="subtitle">Stat Block — Current Form</div>
   </div>
@@ -195,9 +195,18 @@ body::before {
 <script>
 const SAVE_KEY = 'dragon_telluric';
 const TOTAL = 21;
-const BASE = { STR: 14, DEX: 8, CON: 16, INT: 10, WIS: 12, CHA: 8 };
-const PROF = 2;
-const OATHSWORN_LEVEL = 11;
+const BASE = { STR: 16, DEX: 10, CON: 14, INT: 10, WIS: 12, CHA: 8 };
+const PROF = 3;
+
+const STAGES = [
+  { name: 'Wyrmling', size: 'Tiny',   hpMult: 10, eyebrow: '⛰️ Telluric Wyrmling' },
+  { name: 'Whelp',   size: 'Small',  hpMult: 20, eyebrow: '⛰️ Telluric Whelp'    },
+  { name: 'Young',   size: 'Medium', hpMult: 30, eyebrow: '⛰️ Telluric Young'    },
+  { name: 'Adult',   size: 'Large',  hpMult: 40, eyebrow: '⛰️ Telluric Adult'    },
+];
+function getStageIdx(n) {
+  if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0;
+}
 
 const STAT_BONUSES = {
   p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
@@ -233,8 +242,11 @@ function render() {
   const conMod = mod(stats.CON), dexMod = mod(stats.DEX);
   const strMod = mod(stats.STR), wisMod = mod(stats.WIS);
 
-  const hp = conMod * 10 + OATHSWORN_LEVEL * 2;
-  const hpFormula = `CON ${signed(conMod)}×10 + Oathsworn Lv.${OATHSWORN_LEVEL}×2`;
+  const stageIdx = getStageIdx(count);
+  const stage = STAGES[stageIdx];
+  const hp = conMod * stage.hpMult + 11 * 2;
+
+  document.getElementById('stageEyebrow').textContent = stage.eyebrow;
 
   const breathDC = 8 + PROF + conMod;
   const tailDC = 8 + PROF + strMod;
@@ -245,31 +257,30 @@ function render() {
   if (unlocked.has('p3cap')) { ac += 2; acFormula += ' +2'; }
 
   // Breath weapon
-  let breathCone = '15 ft.', breathDmg = '3d8 thunder';
+  let breathCone = '15 ft.', breathDmg = '3d10 thunder';
   let breathRecharge = '1/short rest';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
   if (unlocked.has('p1n2')) { breathCone = '20 ft.'; breathDmg = '4d10 thunder'; }
 
   // Speed
-  let speeds = '30 ft., fly 60 ft.';
-  if (unlocked.has('p2n1')) speeds += ', burrow 20 ft.';
+  let speeds = '20 ft., burrow 40 ft.';
 
   const biteHit = signed(strMod + PROF);
   const biteDmg = '1d8' + (strMod >= 0 ? '+' : '') + strMod + ' piercing';
 
   // Resistances
-  const resistances = [];
-  if (unlocked.has('p3n1')) resistances.push('bludgeoning, piercing, and slashing from nonmagical attacks');
+  const resistances = ['bludgeoning'];
+  if (unlocked.has('p3n1')) { resistances.length = 0; resistances.push('bludgeoning, piercing, and slashing'); }
 
   // ── Build HTML ────────────────────────────────────────────────────────────
 
   let html = `
-    <div class="sb-name">Telluric Dragon Wyrmling</div>
-    <div class="sb-type"><em>Small Dragon, Neutral Good</em></div>
+    <div class="sb-name">Telluric Dragon ${stage.name}</div>
+    <div class="sb-type"><em>${stage.size} Dragon</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
       <p><strong>Armor Class</strong> ${ac} (13 + DEX mod.)</p>
-      <p><strong>Hit Points</strong> ${hp} (10 * CON mod. + Oathsworn Lvl * 2)</p>
+      <p><strong>Hit Points</strong> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
       <p><strong>Speed</strong> ${speeds}</p>
     </div>
     <div class="sb-divider"></div>
@@ -287,18 +298,30 @@ function render() {
   html += `<p class="sb-prop"><strong>Saving Throws</strong> Str ${signed(strMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
   html += `<p class="sb-prop"><strong>Skills</strong> Perception ${signed(wisMod + PROF)}, Athletics ${signed(strMod + PROF)}</p>`;
   if (resistances.length) html += `<p class="sb-prop"><strong>Damage Resistances</strong> ${resistances.join('; ')}</p>`;
-  let senses = 'Darkvision 60 ft.';
+  let senses = 'Darkvision 30 ft.';
   if (unlocked.has('p1n1')) senses = 'Tremorsense 30 ft., ' + senses;
   html += `<p class="sb-prop"><strong>Senses</strong> ${senses}, Passive Perception ${10 + wisMod + PROF}</p>`;
   html += `<p class="sb-prop"><strong>Languages</strong> Draconic</p>`;
-  html += `<p class="sb-prop"><strong>Challenge</strong> 3 (700 XP) &nbsp;·&nbsp; <strong>Proficiency Bonus</strong> +${PROF}</p>`;
+  html += `<p class="sb-prop"><strong>Proficiency Bonus</strong> +${PROF}</p>`;
   html += `<div class="sb-divider"></div>`;
 
   // ── Traits ────────────────────────────────────────────────────────────────
 
+  html += `<div class="sb-ability"><span class="sb-ability-name">Stone Bulwark.</span>
+    <p>The dragon has <b>resistance to bludgeoning damage</b>, has <b>advantage</b> on saving throws and ability checks against effects that would move it against its will, and the area within <b>5 ft.</b> of the dragon is considered <b>difficult terrain</b> for hostile creatures.</p></div>`;
+
+  if (stageIdx >= 1) {
+    const regen = [0, 5, 10, 20][stageIdx];
+    let shText = `At the start of each of its turns, the dragon regains <b>${regen} HP</b> as living stone seals its wounds.`;
+    if (stageIdx >= 2) shText += ` The dragon is <b>immune to the petrified and charmed conditions</b>.`;
+    if (stageIdx >= 3) shText += ` Once per long rest, when reduced to 0 HP, the dragon instead drops to <b>1 HP</b> — a shell of indestructible stone briefly encases its vital organs, shattering harmlessly at the start of its next turn.`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Stone Heart <span class="tag">(${stage.name}).</span></span>
+      <p>${shText}</p></div>`;
+  }
+
   if (unlocked.has('p3n1')) {
     html += `<div class="sb-ability"><span class="sb-ability-name">Crystal Scales.</span>
-      <p>Gemstones protrude from the dragon's hide. It gains <b>resistance to bludgeoning, piercing, and slashing damage from nonmagical attacks</b>, and its AC increases by <b>+1</b> (already applied above).</p></div>`;
+      <p>Gemstones protrude from the dragon's hide. It gains <b>resistance to bludgeoning, piercing, and slashing damage</b>, and its AC increases by <b>+1</b> (already applied above).</p></div>`;
   }
 
   if (unlocked.has('p3n2')) {
@@ -313,7 +336,7 @@ function render() {
 
   if (unlocked.has('p3cap')) {
     html += `<div class="sb-ability"><span class="sb-ability-name">Adamant Carapace.</span>
-      <p>The dragon's AC increases by an additional <b>+2</b> (already applied above). The dragon is <b>immune to being moved against its will</b> (it cannot be knocked prone, pushed, or grappled). <b>1/Long Rest (Reaction):</b> When reduced to 0 HP, the dragon drops to <b>1 HP</b> instead and emits a 30 ft. shockwave — creatures must succeed on a <b>STR save (DC ${tailDC})</b> or take <b>4d10 bludgeoning damage</b> and be pushed <b>15 ft.</b></p></div>`;
+      <p>The dragon's AC increases by an additional <b>+2</b>. The dragon is <b>immune to critical hits</b>. All damage the dragon deals to <b>structures</b> is maximized. The dragon takes <b>5 less damage</b> from all sources.</p></div>`;
   }
 
   html += `<div class="sb-divider"></div>`;
@@ -321,40 +344,47 @@ function render() {
   // ── Actions ───────────────────────────────────────────────────────────────
   html += `<div class="sb-section-title">Actions</div>`;
 
+  if (unlocked.has('p2n1')) {
+    html += `<div class="sb-ability">
+      <span class="sb-ability-name">Multiattack.</span>
+      <p>The dragon makes <b>two Rolling Charge attacks</b>, or <b>one Rolling Charge and one Bone Mace Tail</b> attack.</p>
+    </div>`;
+  }
+
   html += `<div class="sb-ability">
-    <span class="sb-ability-name">Bite. <span class="tag">Melee Weapon Attack:</span></span>
-    <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${biteDmg}.</p>
+    <span class="sb-ability-name">Rolling Charge. <span class="tag">Melee Weapon Attack:</span></span>
+    <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${strMod} bludgeoning. If the target is <b>Medium or smaller</b>, it is pushed <b>10 ft.</b> away from the dragon and knocked <b>prone</b>.</p>
   </div>`;
 
   if (unlocked.has('p2n2') && !unlocked.has('p2cap')) {
     const tailDmg = '2d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
     html += `<div class="sb-ability">
       <span class="sb-ability-name">Bone Mace Tail. <span class="tag">Melee Weapon Attack:</span></span>
-      <p>${biteHit} to hit, reach 10 ft., one target. <b>Hit:</b> ${tailDmg}. The target must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>stunned</b> until the end of its next turn.</p>
+      <p>${biteHit} to hit, reach 10 ft., one target. <b>Hit:</b> ${tailDmg}. The target must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn (can move or take an action, not both; no reactions).</p>
     </div>`;
   }
 
   if (unlocked.has('p2cap')) {
     const tailDmg = '4d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
     html += `<div class="sb-ability">
-      <span class="sb-ability-name">Earthshaker Strike. <span class="tag">Melee Weapon Attack:</span></span>
-      <p>The dragon's tail crashes down in a <b>15 ft. cone behind it</b>. Each creature in the area must make a <b>STR save (DC ${tailDC})</b>. On a failure: <b>${tailDmg}</b>, <b>stunned</b> until end of next turn, and pushed <b>10 ft.</b> On a success, half damage only. The point of impact becomes a <b>10 ft. radius of difficult terrain</b> (rubble).</p>
+      <span class="sb-ability-name">Earthshaker Strike.</span>
+      <p>The dragon's tail crashes down in a <b>15 ft. cone behind it</b>. Each creature in the area must make a <b>STR save (DC ${tailDC})</b>. On a failure: <b>${tailDmg}</b>, <b>dazed</b> until end of next turn, and knocked <b>prone</b>. On a success, half damage only.</p>
     </div>`;
   }
 
-  let breathExtra = '';
+  let breathFailExtra = ' A creature that fails is also <b>deafened</b> until the end of its next turn, as the bone-shaking blast leaves their ears ringing.';
   if (unlocked.has('p1n3')) {
-    breathExtra = ' On a failed save, the creature is also <b>knocked prone</b> and the affected area becomes <b>difficult terrain</b> (broken stone) until the end of combat.';
+    breathFailExtra += ' It is also <b>knocked prone</b> and the affected area becomes <b>difficult terrain</b> (broken stone) until the end of combat.';
   }
   html += `<div class="sb-ability">
-    <span class="sb-ability-name">Seismic Breath <span class="tag">(${breathRecharge}).</span></span>
-    <p>The dragon exhales a concussive roar in a ${breathCone} cone. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathExtra}</p>
+    <span class="sb-ability-name">Shockwave Breath <span class="tag">(${breathRecharge}).</span></span>
+    <p>The dragon exhales a bone-shaking blast in a ${breathCone} cone. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathFailExtra}</p>
   </div>`;
 
   if (unlocked.has('p1cap')) {
     html += `<div class="sb-ability">
       <span class="sb-ability-name">Cataclysm <span class="tag">(1/Long Rest).</span></span>
-      <p>The dragon triggers a massive earthquake in a <b>60 ft. radius</b> centered on itself. All creatures in the area must make a <b>DEX save (DC ${breathDC})</b>. On a failure, they take <b>6d10 bludgeoning damage</b> and are knocked <b>prone</b>; half damage and remain standing on a success. A <b>10 ft.-wide fissure</b> opens at a point of the dragon's choice within the area. Structures in the area take maximum damage.</p>
+      <p>The dragon releases a catastrophic blast in a <b>60 ft. cone</b>. All creatures in the area must make a <b>DEX save (DC ${breathDC})</b>. On a failure, they take <b>6d10 bludgeoning damage</b> and are <b>buried</b> — knocked <b>prone and restrained</b> until the end of their next turn as debris crashes over them. Half damage and no burial on a success. Structures in the area take maximum damage.</p>
     </div>`;
   }
 
@@ -362,8 +392,8 @@ function render() {
   if (unlocked.has('p3n3')) {
     html += `<div class="sb-section-title">Reactions</div>`;
     html += `<div class="sb-ability">
-      <span class="sb-ability-name">Shattering Pushback.</span>
-      <p>When a creature within <b>10 ft.</b> hits the dragon with a melee attack, the dragon releases a burst of crystal shards. The attacker takes <b>2d8 piercing damage</b> and must succeed on a <b>STR save (DC ${tailDC})</b> or be pushed <b>10 ft.</b> and knocked <b>prone</b>.</p>
+      <span class="sb-ability-name">Plate Shed.</span>
+      <p>When the dragon takes damage, it can shed its outer layer of stone plating, hurling the shards at the attacker. The attacker takes <b>${ac} bludgeoning damage</b>. The dragon's AC is then <b>reduced to 13</b> for 1 minute as the plates begin to regrow.</p>
     </div>`;
   }
 

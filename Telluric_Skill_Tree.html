@@ -575,6 +575,15 @@
     .save-tool-btn:active { color: var(--col1); border-color: rgba(232,156,31,0.4); }
     .reset-btn:active { color: var(--col1); border-color: rgba(232,156,31,0.4); }
   }
+
+  .evo-panel {
+    background: rgba(40,25,10,0.65); border: 1px solid rgba(232,156,31,0.18);
+    border-radius: 10px; padding: 16px 20px; margin-bottom: 28px;
+  }
+  .evo-header { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 3px; text-transform: uppercase; color: #8a6a40; margin-bottom: 8px; }
+  .evo-name { font-family: 'Cinzel', serif; font-size: 0.88rem; color: #f0d8a8; font-weight: 600; margin-bottom: 5px; font-style: italic; }
+  .evo-rule { font-size: 0.82rem; line-height: 1.5; color: #c0a070; }
+  .evo-locked { font-family: 'Cinzel', serif; font-size: 0.72rem; color: #5a4a2a; font-style: italic; }
 </style>
 </head>
 <body>
@@ -644,6 +653,8 @@
     <div class="legend-item"><div class="legend-dot" style="background: rgba(240,180,41,0.3); border: 1px solid rgba(240,180,41,0.5);"></div> Capstone</div>
   </div>
 
+  <div class="evo-panel" id="evoPanel"></div>
+
   <div class="paths" id="paths">
     <!-- Rendered by JS -->
   </div>
@@ -685,7 +696,7 @@
 <script>
 // ── DATA ─────────────────────────────────────────────────────────────────────
 
-const baseStats = { STR: 14, DEX: 8, CON: 16, INT: 10, WIS: 12, CHA: 8 };
+const baseStats = { STR: 16, DEX: 10, CON: 14, INT: 10, WIS: 12, CHA: 8 };
 const currentStats = { ...baseStats };
 
 const paths = [
@@ -720,7 +731,7 @@ const paths = [
         id: 'p1cap', type: 'capstone',
         icon: '🌍', name: 'Cataclysm',
         desc: 'The earth itself answers the dragon\'s call.',
-        rule: '<b>Once/Long Rest:</b> 60ft radius earthquake centered on the dragon. All creatures DEX save or take <b>6d10 bludgeoning damage</b> and be knocked prone (half damage & still standing on success). A 10ft-wide fissure opens at a point of the dragon\'s choice in the area; structures take maximum damage.',
+        rule: '<b>Once/Long Rest:</b> The dragon releases a catastrophic blast in a <b>60ft cone</b>. All creatures must make a <b>DEX save</b> or take <b>6d10 bludgeoning damage</b> and be <b>buried</b> — knocked <b>prone and restrained</b> until the end of their next turn as debris crashes over them. Half damage and no burial on a success. Can use an action to end the condition early.',
       },
     ]
   },
@@ -732,16 +743,16 @@ const paths = [
     nodes: [
       {
         id: 'p2n1', type: 'ability',
-        icon: '⛏️', name: 'Burrowing Claws',
-        desc: 'Stone is no barrier to the patient.',
-        rule: 'The dragon gains a <b>burrow speed of 20ft</b> through earth, sand, and gravel (cannot burrow through solid stone yet).',
+        icon: '⚔️', name: 'Multiattack',
+        desc: 'With coiled power, the dragon strikes twice in a single lunge.',
+        rule: 'The dragon can make <b>two Rolling Charge attacks</b>, or <b>one Rolling Charge and one Bone Mace Tail</b> attack.',
       },
       { id: 'p2s1', type: 'stat', stat: 'STR', bonus: 1 },
       {
         id: 'p2n2', type: 'ability',
         icon: '🦴', name: 'Bone Mace Tail',
         desc: 'A tail forged like a mace — bone and stone fused into a single hammer.',
-        rule: '<b>New Attack:</b> Single target within 10ft, STR save. <b>2d8 + STR bludgeoning</b>; on a failure the target is also <b>stunned</b> until the end of their next turn.',
+        rule: '<b>New Attack:</b> Single target within 10ft, STR save. <b>2d8 + STR bludgeoning</b>; on a failure the target is also <b>dazed</b> until the end of their next turn (can move or take an action, not both; no reactions).',
       },
       { id: 'p2s2', type: 'stat', stat: 'STR', bonus: 1 },
       {
@@ -755,7 +766,7 @@ const paths = [
         id: 'p2cap', type: 'capstone',
         icon: '🔨', name: 'Earthshaker Strike',
         desc: 'Each tail strike cracks the world a little further open.',
-        rule: 'The <b>Bone Mace Tail</b> now hits all creatures in a <b>15ft cone behind the dragon</b>. Damage increases to <b>4d8 + STR bludgeoning</b>. Targets that fail are <b>stunned</b> and pushed <b>10ft</b>. The point of impact becomes a 10ft-radius crater of difficult terrain.',
+        rule: 'The <b>Bone Mace Tail</b> now hits all creatures in a 10ft half circle behind the dragon</b>. Damage increases to <b>4d8 + STR bludgeoning</b>. Targets that fail the save are <b>dazed</b> and knocked <b>prone</b>.',
       },
     ]
   },
@@ -769,7 +780,7 @@ const paths = [
         id: 'p3n1', type: 'ability',
         icon: '💎', name: 'Crystal Scales',
         desc: 'Gemstones erupt from its hide, hard as adamantine.',
-        rule: 'The dragon gains <b>resistance to non-magical bludgeoning, piercing, and slashing</b>. Its base <b>AC increases by +1</b>.',
+        rule: 'The dragon gains <b>resistance to bludgeoning, piercing, and slashing</b>. Its base <b>AC increases by +1</b>.',
       },
       { id: 'p3s1', type: 'stat', stat: 'DEX', bonus: 1 },
       {
@@ -781,20 +792,48 @@ const paths = [
       { id: 'p3s2', type: 'stat', stat: 'DEX', bonus: 1 },
       {
         id: 'p3n3', type: 'unique',
-        icon: '💢', name: 'Shattering Pushback',
-        desc: 'Strike the stone, and the stone strikes back.',
-        rule: '<b>Reaction:</b> When a creature within 10ft hits the dragon with a melee attack, the dragon releases a burst of crystal shards. The attacker takes <b>2d8 piercing damage</b> and must succeed on a <b>STR save</b> or be pushed <b>10ft</b> and knocked prone.',
+        icon: '🪨', name: 'Plate Shed',
+        desc: 'The dragon sheds its own armor like a weapon.',
+        rule: '<b>Reaction:</b> When the dragon takes damage, it can shed its outer layer of stone plating, hurling the shards at the attacker. The attacker takes <b>bludgeoning damage equal to the dragon\'s current AC</b>. The dragon\'s AC is then <b>reduced to 13</b> for 1 minute as the plates begin to regrow.',
       },
       { id: 'p3s3', type: 'stat', stat: 'DEX', bonus: 2 },
       {
         id: 'p3cap', type: 'capstone',
         icon: '🛡️', name: 'Adamant Carapace',
         desc: 'Becomes one with the bedrock — immovable, unbreakable.',
-        rule: '<b>Passive:</b> AC increases by another <b>+2</b>. The dragon becomes <b>immune to being moved against its will</b> (knocked prone, pushed, grappled). <b>1/Long Rest:</b> as a reaction to being reduced to 0 HP, the dragon instead drops to 1 HP and emits a 30ft shockwave (STR save or 4d10 bludgeoning & pushed 15ft).',
+        rule: '<b>Passive:</b> AC increases by <b>+2</b>. The dragon is <b>immune to critical hits</b>. All damage the dragon deals to <b>structures</b> is maximized. The dragon takes <b>5 less damage</b> from all sources.',
       },
     ]
   }
 ];
+
+// ── EVOLUTION ────────────────────────────────────────────────────────────────
+const EVO_STAGES = [
+  { name: 'Wyrmling', size: 'Tiny'   },
+  { name: 'Whelp',   size: 'Small'  },
+  { name: 'Young',   size: 'Medium' },
+  { name: 'Adult',   size: 'Large'  },
+];
+function getStageIdx(n) {
+  if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0;
+}
+
+function updateEvoPanel() {
+  const si = getStageIdx(unlocked.size);
+  const stage = EVO_STAGES[si];
+  const panel = document.getElementById('evoPanel');
+  if (si === 0) {
+    panel.innerHTML = `<div class="evo-header">Evolution Passive</div><div class="evo-locked">Unlocks at 5 mastery (Whelp) — Stone Heart</div>`;
+    return;
+  }
+  const regen = [0, 5, 10, 20][si];
+  let rule = `At the start of each of its turns, the dragon regains <b>${regen} HP</b> as living stone seals its wounds.`;
+  if (si >= 2) rule += ` <b>Immune to petrified and charmed</b>.`;
+  if (si >= 3) rule += ` Once per long rest, when reduced to 0 HP, drops to <b>1 HP instead</b> as indestructible stone encases its vital organs.`;
+  panel.innerHTML = `<div class="evo-header">Evolution Passive · ${stage.name} (${stage.size})</div>
+    <div class="evo-name">Stone Heart</div>
+    <div class="evo-rule">${rule}</div>`;
+}
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const unlocked = new Set();
@@ -943,6 +982,7 @@ function rebuildUI() {
 
     container.appendChild(col);
   });
+  updateEvoPanel();
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
@@ -1124,7 +1164,6 @@ document.getElementById('loadCodeBtn').addEventListener('click', () => {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateStats();
 rebuildUI();
-// Try to load from GitHub after first render (shows local state instantly, then updates if remote differs)
 if (ghConfigured()) {
   loadFromGitHub().then(loaded => { if (loaded) { updateStats(); rebuildUI(); } });
 }

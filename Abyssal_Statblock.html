@@ -175,7 +175,7 @@ body::before {
   </nav>
 
   <div class="dragon-header">
-    <div class="eyebrow">⚫ Deep Sea Wyrmling</div>
+    <div class="eyebrow" id="stageEyebrow">⚫ Deep Sea Wyrmling</div>
     <h1>Abyssal Dragon</h1>
     <div class="subtitle">Stat Block — Current Form</div>
   </div>
@@ -198,13 +198,21 @@ const TOTAL = 21;
 const BASE = { STR: 10, DEX: 16, CON: 14, INT: 8, WIS: 12, CHA: 10 };
 const PROF = 3;
 
+const STAGES = [
+  { name: 'Wyrmling', size: 'Tiny',   hpMult: 10, eyebrow: '⚫ Abyssal Wyrmling', blindsight: '10 ft.'  },
+  { name: 'Whelp',   size: 'Small',  hpMult: 20, eyebrow: '⚫ Abyssal Whelp',    blindsight: '30 ft.'  },
+  { name: 'Young',   size: 'Medium', hpMult: 30, eyebrow: '⚫ Abyssal Young',    blindsight: '60 ft.'  },
+  { name: 'Adult',   size: 'Large',  hpMult: 40, eyebrow: '⚫ Abyssal Adult',    blindsight: '90 ft.'  },
+];
+function getStageIdx(n) {
+  if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0;
+}
+
 const STAT_BONUSES = {
   p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
   p2s1: { stat: 'DEX', bonus: 1 }, p2s2: { stat: 'DEX', bonus: 1 }, p2s3: { stat: 'DEX', bonus: 2 },
   p3s1: { stat: 'CHA', bonus: 1 }, p3s2: { stat: 'CHA', bonus: 1 }, p3s3: { stat: 'CHA', bonus: 2 },
 };
-
-const OATHSWORN_LEVEL = 11;
 
 function getUnlocked() {
   try { const s = localStorage.getItem(SAVE_KEY); return new Set(s ? JSON.parse(s) : []); }
@@ -237,8 +245,11 @@ function render() {
   const wisMod = mod(stats.WIS);
   const chaMod = mod(stats.CHA);
 
-  const hp = conMod * 10 + OATHSWORN_LEVEL * 2;
-  const hpFormula = `CON ${signed(conMod)}×10 + Oathsworn Lv.${OATHSWORN_LEVEL}×2`;
+  const stageIdx = getStageIdx(count);
+  const stage = STAGES[stageIdx];
+  const hp = conMod * stage.hpMult + 11 * 2;
+
+  document.getElementById('stageEyebrow').textContent = stage.eyebrow;
 
   const ac = 13 + dexMod;
   const acFormula = `13 + DEX ${signed(dexMod)}`;
@@ -264,12 +275,12 @@ function render() {
   // ── Build HTML ────────────────────────────────────────────────────────────
 
   let html = `
-    <div class="sb-name">Abyssal Dragon Wyrmling — Villis</div>
-    <div class="sb-type"><em>Small Dragon (Wyrmling Cub), Neutral</em></div>
+    <div class="sb-name">Abyssal Dragon ${stage.name} — Villis</div>
+    <div class="sb-type"><em>${stage.size} Dragon, Neutral</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
       <p><strong>Armor Class</strong> ${ac} (13 + DEX mod.)</p>
-      <p><strong>Hit Points</strong> ${hp} (10 * CON mod. + Oathsworn Lvl * 2)</p>
+      <p><strong>Hit Points</strong> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
       <p><strong>Speed</strong> 20 ft., swim 40 ft., fly 20 ft.</p>
     </div>
     <div class="sb-divider"></div>
@@ -289,7 +300,8 @@ function render() {
   html += `<p class="sb-prop"><strong>Damage Resistances</strong> bludgeoning (Pressure Aura)`;
   if (unlocked.has('p1n1')) html += ', cold';
   html += `</p>`;
-  html += `<p class="sb-prop"><strong>Senses</strong> Blindsight 10 ft., Darkvision 60 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
+  const blindsight = stageIdx >= 3 ? `Blindsight 90 ft., Truesight 30 ft.` : `Blindsight ${stage.blindsight}`;
+  html += `<p class="sb-prop"><strong>Senses</strong> ${blindsight}, Darkvision 60 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
   html += `<p class="sb-prop"><strong>Languages</strong> Draconic</p>`;
   html += `<p class="sb-prop"><strong>Challenge</strong> — &nbsp;·&nbsp; <strong>Proficiency Bonus</strong> +${PROF}</p>`;
   html += `<div class="sb-divider"></div>`;
@@ -312,6 +324,15 @@ function render() {
   }
   html += `<div class="sb-ability"><span class="sb-ability-name">Pressure Aura.</span>
     <p>The wyrmling exudes crushing abyssal pressure in a <b>${auraRange} radius</b>. It gains <b>resistance to bludgeoning damage</b>. ${auraEffects.join(' ')}</p></div>`;
+
+  if (stageIdx >= 1) {
+    const coldDice = ['', '1d6', '2d6', '3d6'][stageIdx];
+    let vbText = `The dragon's senses pierce the deep dark. Its blindsight extends to <b>${stage.blindsight}</b>. It is <b>immune to the frightened condition</b>. Creatures that hit it with a melee attack take <b>${coldDice} cold damage</b> from the void chill radiating off its scales.`;
+    if (stageIdx >= 2) vbText += ` The dragon is also <b>immune to the charmed condition</b> and can breathe water freely.`;
+    if (stageIdx >= 3) vbText += ` The dragon is <b>immune to psychic damage</b>, can see through magical darkness, and its cold damage <b>ignores resistance</b>.`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Void-Born <span class="tag">(${stage.name}).</span></span>
+      <p>${vbText}</p></div>`;
+  }
 
   if (unlocked.has('p2n3')) {
     html += `<div class="sb-ability"><span class="sb-ability-name">Blood Frenzy.</span>

@@ -573,6 +573,15 @@
     .save-tool-btn:active { color: var(--col1); border-color: rgba(0,200,215,0.4); }
     .reset-btn:active { color: var(--col1); border-color: rgba(0,200,215,0.4); }
   }
+
+  .evo-panel {
+    background: rgba(0,12,30,0.65); border: 1px solid rgba(0,200,215,0.18);
+    border-radius: 10px; padding: 16px 20px; margin-bottom: 28px;
+  }
+  .evo-header { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 3px; text-transform: uppercase; color: #3a6080; margin-bottom: 8px; }
+  .evo-name { font-family: 'Cinzel', serif; font-size: 0.88rem; color: #c8e8f8; font-weight: 600; margin-bottom: 5px; font-style: italic; }
+  .evo-rule { font-size: 0.82rem; line-height: 1.5; color: #8aafc8; }
+  .evo-locked { font-family: 'Cinzel', serif; font-size: 0.72rem; color: #2a4060; font-style: italic; }
 </style>
 </head>
 <body>
@@ -641,6 +650,8 @@
     <div class="legend-item"><div class="legend-dot" style="background: rgba(168,85,247,0.4); border: 1px solid rgba(168,85,247,0.6);"></div> Unique</div>
     <div class="legend-item"><div class="legend-dot" style="background: rgba(240,180,41,0.3); border: 1px solid rgba(240,180,41,0.5);"></div> Capstone</div>
   </div>
+
+  <div class="evo-panel" id="evoPanel"></div>
 
   <div class="paths" id="paths">
     <!-- Rendered by JS -->
@@ -794,6 +805,35 @@ const paths = [
   }
 ];
 
+// ── EVOLUTION ────────────────────────────────────────────────────────────────
+const EVO_STAGES = [
+  { name: 'Wyrmling', size: 'Tiny',   blindsight: '10 ft.' },
+  { name: 'Whelp',   size: 'Small',  blindsight: '30 ft.' },
+  { name: 'Young',   size: 'Medium', blindsight: '60 ft.' },
+  { name: 'Adult',   size: 'Large',  blindsight: '90 ft.' },
+];
+function getStageIdx(n) {
+  if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0;
+}
+
+function updateEvoPanel() {
+  const si = getStageIdx(unlocked.size);
+  const stage = EVO_STAGES[si];
+  const panel = document.getElementById('evoPanel');
+  if (si === 0) {
+    panel.innerHTML = `<div class="evo-header">Evolution Passive</div><div class="evo-locked">Unlocks at 5 mastery (Whelp) — Void-Born</div>`;
+    return;
+  }
+  const coldDice = ['', '1d6', '2d6', '4d6'][si];
+  const sight = si >= 3 ? 'Blindsight 90 ft., Truesight 30 ft.' : `Blindsight ${stage.blindsight}`;
+  let rule = `${sight}. <b>Immune to frightened</b>. Creatures that hit the dragon with a melee attack take <b>${coldDice} cold damage</b>.`;
+  if (si >= 2) rule += ` Also <b>immune to charmed</b>. Can breathe water freely.`;
+  if (si >= 3) rule += ` Also <b>immune to psychic damage</b>. Sees through magical darkness. Cold damage <b>ignores resistance</b>.`;
+  panel.innerHTML = `<div class="evo-header">Evolution Passive · ${stage.name} (${stage.size})</div>
+    <div class="evo-name">Void-Born</div>
+    <div class="evo-rule">${rule}</div>`;
+}
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const unlocked = new Set();
 
@@ -941,6 +981,7 @@ function rebuildUI() {
 
     container.appendChild(col);
   });
+  updateEvoPanel();
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
@@ -1116,7 +1157,6 @@ document.getElementById('loadCodeBtn').addEventListener('click', () => {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateStats();
 rebuildUI();
-// Try to load from GitHub after first render (shows local state instantly, then updates if remote differs)
 if (ghConfigured()) {
   loadFromGitHub().then(loaded => { if (loaded) { updateStats(); rebuildUI(); } });
 }
