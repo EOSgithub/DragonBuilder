@@ -47,7 +47,7 @@
   .wrapper {
     position: relative;
     z-index: 1;
-    max-width: 860px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 70px 20px 60px;
     display: flex;
@@ -95,7 +95,7 @@
   /* Dragon cards */
   .dragons {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 24px;
     width: 100%;
     margin-bottom: 36px;
@@ -157,6 +157,20 @@
     box-shadow: 0 0 40px rgba(232,156,31,0.18), 0 24px 48px rgba(0,0,0,0.5);
   }
 
+  /* Erosion */
+  .card-erosion {
+    background: rgba(10,9,8,0.88);
+    border: 1px solid rgba(200,184,144,0.18);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .card-erosion::after {
+    background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(200,184,144,0.06) 0%, transparent 70%);
+  }
+  .card-erosion:hover {
+    border-color: rgba(200,184,144,0.46);
+    box-shadow: 0 0 40px rgba(200,184,144,0.14), 0 24px 48px rgba(0,0,0,0.5);
+  }
+
   .dragon-emoji {
     font-size: 3.5rem;
     margin-bottom: 14px;
@@ -176,6 +190,7 @@
   }
   .card-abyssal .dragon-name { text-shadow: 0 0 16px rgba(0,200,215,0.6); }
   .card-telluric .dragon-name { text-shadow: 0 0 16px rgba(232,156,31,0.6); }
+  .card-erosion  .dragon-name { text-shadow: 0 0 16px rgba(200,184,144,0.5); }
 
   .dragon-type {
     font-size: 0.68rem;
@@ -188,6 +203,7 @@
   }
   .card-abyssal .dragon-type { color: #4a9ab0; }
   .card-telluric .dragon-type { color: #a07838; }
+  .card-erosion  .dragon-type { color: #8a7860; }
 
   .dragon-lore {
     font-size: 0.88rem;
@@ -197,10 +213,11 @@
     margin-bottom: 26px;
     position: relative;
     z-index: 1;
-    max-width: 300px;
+    max-width: 100%;
   }
   .card-abyssal .dragon-lore { color: #5a8aaa; }
   .card-telluric .dragon-lore { color: #9a7848; }
+  .card-erosion  .dragon-lore { color: #7a6a52; }
 
   /* Progress */
   .progress-section {
@@ -225,6 +242,7 @@
   }
   .card-abyssal .progress-label { color: #3a6a8a; }
   .card-telluric .progress-label { color: #7a5a30; }
+  .card-erosion  .progress-label { color: #5a5040; }
 
   .progress-count {
     font-family: 'Cinzel Decorative', serif;
@@ -233,6 +251,7 @@
   }
   .card-abyssal .progress-count { color: #00c8d7; }
   .card-telluric .progress-count { color: #e89c1f; }
+  .card-erosion  .progress-count { color: #c8b890; }
 
   .progress-bar-bg {
     height: 4px;
@@ -241,6 +260,7 @@
   }
   .card-abyssal .progress-bar-bg { background: rgba(0,200,215,0.1); }
   .card-telluric .progress-bar-bg { background: rgba(232,156,31,0.1); }
+  .card-erosion  .progress-bar-bg { background: rgba(200,184,144,0.1); }
 
   .progress-bar-fill {
     height: 100%;
@@ -254,6 +274,10 @@
   .card-telluric .progress-bar-fill {
     background: linear-gradient(to right, #e89c1f, #f0c878);
     box-shadow: 0 0 8px rgba(232,156,31,0.5);
+  }
+  .card-erosion .progress-bar-fill {
+    background: linear-gradient(to right, #c8b890, #dcd0b8);
+    box-shadow: 0 0 8px rgba(200,184,144,0.4);
   }
 
   .open-btn {
@@ -292,6 +316,16 @@
     border-color: rgba(232,156,31,0.55);
     box-shadow: 0 0 14px rgba(232,156,31,0.25);
   }
+  .card-erosion .open-btn {
+    background: rgba(200,184,144,0.08);
+    color: #c8b890;
+    border: 1px solid rgba(200,184,144,0.24);
+  }
+  .card-erosion:hover .open-btn {
+    background: rgba(200,184,144,0.16);
+    border-color: rgba(200,184,144,0.5);
+    box-shadow: 0 0 14px rgba(200,184,144,0.2);
+  }
 
   /* Info */
   .info-box {
@@ -326,7 +360,8 @@
     .dragon-card:hover { transform: none; }
     .card-abyssal:hover { border-color: rgba(0,200,215,0.22); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
     .card-telluric:hover { border-color: rgba(232,156,31,0.22); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
-    .card-abyssal:hover::after, .card-telluric:hover::after { opacity: 0; }
+    .card-erosion:hover  { border-color: rgba(200,184,144,0.18); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .card-abyssal:hover::after, .card-telluric:hover::after, .card-erosion:hover::after { opacity: 0; }
     .dragon-card:active { transform: scale(0.97); transition: transform 0.1s; }
   }
 </style>
@@ -379,6 +414,23 @@
       <span class="open-btn">View Stat Block →</span>
     </a>
 
+    <a class="dragon-card card-erosion" href="Erosion_Statblock.html">
+      <div class="dragon-emoji">⏳</div>
+      <div class="dragon-name">Erosion Dragon</div>
+      <div class="dragon-type">Timeworn Wyrmling</div>
+      <div class="dragon-lore">Born where time itself grinds stone to dust, this wyrmling carries the slow, inexorable patience of millennia in its gaze.</div>
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Mastery Progress</span>
+          <span class="progress-count" id="erosionCount">0 / 21</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="erosionBar" style="width:0%"></div>
+        </div>
+      </div>
+      <span class="open-btn">View Stat Block →</span>
+    </a>
+
   </div>
 
   <div class="info-box">
@@ -401,18 +453,17 @@ function loadProgress(key, barId, countId) {
 }
 
 function refreshAll() {
-  loadProgress('dragon_villis', 'abyssalBar', 'abyssalCount');
+  loadProgress('dragon_villis',   'abyssalBar', 'abyssalCount');
   loadProgress('dragon_telluric', 'telluricBar', 'telluricCount');
+  loadProgress('dragon_erosion',  'erosionBar',  'erosionCount');
 }
 
 refreshAll();
 
-// Aggiorna quando si torna con il pulsante indietro (bfcache)
 window.addEventListener('pageshow', function(e) {
   if (e.persisted) refreshAll();
 });
 
-// Aggiorna quando la tab ritorna in primo piano
 document.addEventListener('visibilitychange', function() {
   if (document.visibilityState === 'visible') refreshAll();
 });
@@ -420,13 +471,17 @@ document.addEventListener('visibilitychange', function() {
 // Particles
 (function() {
   const cont = document.getElementById('particles');
-  for (let i = 0; i < 45; i++) {
+  const palette = [
+    (a) => `rgba(0,200,215,${a})`,
+    (a) => `rgba(232,156,31,${a})`,
+    (a) => `rgba(200,184,144,${a})`,
+  ];
+  for (let i = 0; i < 48; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
     const s = Math.random() * 2.5 + 0.8;
-    const isAbyssal = Math.random() < 0.5;
-    const alpha = Math.random() * 0.35 + 0.08;
-    const color = isAbyssal ? `rgba(0,200,215,${alpha})` : `rgba(232,156,31,${alpha})`;
+    const alpha = Math.random() * 0.32 + 0.07;
+    const color = palette[Math.floor(Math.random() * palette.length)](alpha);
     p.style.cssText = `
       width:${s}px; height:${s}px;
       left:${Math.random()*100}%;

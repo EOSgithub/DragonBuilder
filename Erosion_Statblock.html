@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Erosion Dragon — Stat Block</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #09090a;
+  --accent: #c8b890;
+  --divider: rgba(200,184,144,0.28);
+  --text: #c4bdb0;
+  --text-dim: #7a7060;
+  --text-muted: #4a4438;
+  --panel-bg: rgba(10,9,8,0.95);
+  --panel-border: rgba(200,184,144,0.16);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 60%, rgba(100,90,65,0.2) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 78% 30%, rgba(70,65,55,0.14) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+.particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.particle { position: absolute; border-radius: 50%; animation: dustmote linear infinite; }
+@keyframes dustmote {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 0.45; } 90% { opacity: 0.08; }
+  100% { transform: translateY(-20px) scale(0.8); opacity: 0; }
+}
+.wrapper {
+  position: relative; z-index: 1;
+  max-width: 680px; margin: 0 auto; padding: 40px 20px 60px;
+}
+.page-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 32px; gap: 12px;
+}
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-muted); text-decoration: none;
+  padding: 7px 16px; border: 1px solid rgba(200,184,144,0.1);
+  border-radius: 6px; transition: all 0.3s; white-space: nowrap;
+}
+.nav-btn:hover { color: var(--accent); border-color: rgba(200,184,144,0.32); }
+.dragon-header { text-align: center; margin-bottom: 22px; }
+.dragon-header .eyebrow {
+  font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 5px;
+  color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
+}
+.dragon-header h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.6rem, 5vw, 2.6rem); font-weight: 900; color: #fff;
+  text-shadow: 0 0 30px rgba(200,184,144,0.5), 0 0 60px rgba(200,184,144,0.15);
+  letter-spacing: 2px; margin-bottom: 6px;
+}
+.dragon-header .subtitle {
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  color: var(--text-dim); letter-spacing: 2px;
+}
+.mastery-badge {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-bottom: 24px;
+}
+.mastery-badge .count {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 2px; color: var(--text-muted); white-space: nowrap;
+}
+.mastery-bar-bg {
+  flex: 1; max-width: 220px; height: 3px;
+  background: rgba(200,184,144,0.08); border-radius: 2px; overflow: hidden;
+}
+.mastery-bar-fill {
+  height: 100%; background: linear-gradient(to right, var(--accent), #dcd0b8);
+  border-radius: 2px; box-shadow: 0 0 6px rgba(200,184,144,0.4);
+  transition: width 0.5s ease;
+}
+.statblock {
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: 4px; overflow: hidden;
+  box-shadow: 0 0 40px rgba(200,184,144,0.05), 0 8px 40px rgba(0,0,0,0.5);
+}
+.statblock::before, .statblock::after {
+  content: ''; display: block; height: 5px;
+  background: linear-gradient(to right, transparent, rgba(200,184,144,0.6), rgba(200,184,144,0.35), rgba(200,184,144,0.6), transparent);
+  opacity: 0.55;
+}
+.sb-inner { padding: 20px 26px; }
+.sb-name {
+  font-family: 'Cinzel Decorative', serif; font-size: 1.25rem; font-weight: 700;
+  color: var(--accent); text-shadow: 0 0 14px rgba(200,184,144,0.3); margin-bottom: 2px;
+}
+.sb-type { font-size: 0.9rem; font-style: italic; color: var(--text-dim); margin-bottom: 12px; }
+.sb-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--divider), transparent);
+  margin: 13px 0;
+}
+.sb-divider-thin { height: 1px; background: rgba(200,184,144,0.07); margin: 9px 0; }
+.sb-basics p { font-size: 0.9rem; line-height: 1.75; }
+.sb-basics p strong {
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  letter-spacing: 1px; color: var(--accent);
+}
+.sb-scores {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  text-align: center; gap: 4px; margin: 14px 0;
+}
+.sb-score-cell { padding: 6px 2px; }
+.sb-score-label {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 2px; color: var(--accent); margin-bottom: 4px;
+}
+.sb-score-val {
+  font-family: 'Cinzel Decorative', serif; font-size: 1rem;
+  font-weight: 700; color: #fff;
+}
+.sb-score-mod { font-size: 0.78rem; color: var(--text-dim); }
+.sb-prop { font-size: 0.88rem; line-height: 1.7; }
+.sb-prop strong {
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  letter-spacing: 1px; color: var(--accent);
+}
+.sb-section-title {
+  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--accent);
+  border-bottom: 1px solid rgba(200,184,144,0.18);
+  padding-bottom: 6px; margin-bottom: 12px; margin-top: 14px;
+}
+.sb-ability { margin-bottom: 10px; }
+.sb-ability-name {
+  font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 600;
+  font-style: italic; color: var(--text);
+}
+.sb-ability-name .tag {
+  font-style: normal; font-size: 0.7rem;
+  color: var(--text-dim); margin-left: 2px;
+}
+.sb-ability p { font-size: 0.87rem; line-height: 1.55; color: #a09080; margin-top: 3px; }
+.sb-ability p b { color: var(--text); }
+.sb-mechanic {
+  margin-top: 14px; padding: 10px 14px;
+  border: 1px solid rgba(200,184,144,0.13);
+  border-radius: 4px; background: rgba(200,184,144,0.03);
+}
+.sb-mechanic-name {
+  font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600;
+  color: var(--accent); letter-spacing: 2px;
+}
+.sb-mechanic p { font-size: 0.82rem; line-height: 1.55; color: #907860; margin-top: 4px; }
+.sb-mechanic p b { color: var(--text-dim); }
+.sb-locked-hint {
+  font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 2px;
+  color: var(--text-muted); text-align: center; margin-top: 16px; opacity: 0.6;
+}
+@media (max-width: 500px) {
+  .sb-score-label { font-size: 0.58rem; letter-spacing: 1px; }
+  .sb-score-val { font-size: 0.9rem; }
+  .sb-name { font-size: 1.05rem; }
+  .page-nav { flex-wrap: wrap; justify-content: center; }
+}
+@media (hover: none) { .nav-btn:active { color: var(--accent); } }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="wrapper">
+  <nav class="page-nav">
+    <a href="index.html" class="nav-btn">← Wyrmling Codex</a>
+    <a href="Erosion_Skill_Tree.html" class="nav-btn">Skill Tree →</a>
+  </nav>
+
+  <div class="dragon-header">
+    <div class="eyebrow" id="stageEyebrow">⏳ Erosion Wyrmling</div>
+    <h1>Erosion Dragon</h1>
+    <div class="subtitle">Stat Block — Current Form</div>
+  </div>
+
+  <div class="mastery-badge">
+    <span class="count" id="masteryCount">0 / 21 Mastery</span>
+    <div class="mastery-bar-bg"><div class="mastery-bar-fill" id="masteryFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="statblock">
+    <div class="sb-inner" id="sbInner"></div>
+  </div>
+
+  <div class="sb-locked-hint">Sblocca le mastery nella Skill Tree per potenziare il drago</div>
+</div>
+
+<script>
+const SAVE_KEY = 'dragon_erosion';
+const TOTAL = 21;
+const BASE = { STR: 14, DEX: 10, CON: 16, INT: 10, WIS: 12, CHA: 10 };
+const PROF = 3;
+
+const STAGES = [
+  { name: 'Wyrmling', size: 'Tiny',   hpMult: 10, eyebrow: '⏳ Erosion Wyrmling' },
+  { name: 'Whelp',   size: 'Small',  hpMult: 20, eyebrow: '⏳ Erosion Whelp'    },
+  { name: 'Young',   size: 'Medium', hpMult: 30, eyebrow: '⏳ Erosion Young'    },
+  { name: 'Adult',   size: 'Large',  hpMult: 40, eyebrow: '⏳ Erosion Adult'    },
+];
+function getStageIdx(n) {
+  if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0;
+}
+
+const STAT_BONUSES = {
+  p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
+  p2s1: { stat: 'DEX', bonus: 1 }, p2s2: { stat: 'DEX', bonus: 1 }, p2s3: { stat: 'DEX', bonus: 2 },
+  p3s1: { stat: 'WIS', bonus: 1 }, p3s2: { stat: 'WIS', bonus: 1 }, p3s3: { stat: 'WIS', bonus: 2 },
+};
+
+function getUnlocked() {
+  try { const s = localStorage.getItem(SAVE_KEY); return new Set(s ? JSON.parse(s) : []); }
+  catch(e) { return new Set(); }
+}
+
+function mod(v) { return Math.floor((v - 10) / 2); }
+function modStr(v) { const m = mod(v); return (m >= 0 ? '+' : '') + m; }
+function signed(n) { return (n >= 0 ? '+' : '') + n; }
+
+function computeStats(unlocked) {
+  const stats = { ...BASE };
+  for (const [id, nb] of Object.entries(STAT_BONUSES)) {
+    if (unlocked.has(id)) stats[nb.stat] += nb.bonus;
+  }
+  return stats;
+}
+
+function render() {
+  const unlocked = getUnlocked();
+  const stats = computeStats(unlocked);
+  const count = unlocked.size;
+
+  document.getElementById('masteryCount').textContent = count + ' / ' + TOTAL + ' Mastery';
+  document.getElementById('masteryFill').style.width = (count / TOTAL * 100) + '%';
+
+  const conMod = mod(stats.CON);
+  const dexMod = mod(stats.DEX);
+  const strMod = mod(stats.STR);
+  const wisMod = mod(stats.WIS);
+
+  const stageIdx = getStageIdx(count);
+  const stage = STAGES[stageIdx];
+  const hp = conMod * stage.hpMult + 11 * 2;
+
+  document.getElementById('stageEyebrow').textContent = stage.eyebrow;
+
+  const ac = 13 + dexMod;
+
+  const faultHit = signed(strMod + PROF);
+  const faultDmg = strMod > 0 ? `1d4+${strMod} piercing` : strMod < 0 ? `1d4${strMod} piercing` : '1d4 piercing';
+
+  // ── Build HTML ─────────────────────────────────────────────────────────────
+
+  let html = `
+    <div class="sb-name">Erosion Dragon ${stage.name}</div>
+    <div class="sb-type"><em>${stage.size} Dragon, Neutral</em></div>
+    <div class="sb-divider"></div>
+    <div class="sb-basics">
+      <p><strong>Armor Class</strong> ${ac} (13 + DEX mod.)</p>
+      <p><strong>Hit Points</strong> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
+      <p><strong>Speed</strong> 20 ft., fly 20 ft.</p>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-scores">`;
+
+  for (const k of ['STR','DEX','CON','INT','WIS','CHA']) {
+    html += `<div class="sb-score-cell">
+      <div class="sb-score-label">${k}</div>
+      <div class="sb-score-val">${stats[k]}</div>
+      <div class="sb-score-mod">${modStr(stats[k])}</div>
+    </div>`;
+  }
+
+  html += `</div><div class="sb-divider"></div>`;
+  html += `<p class="sb-prop"><strong>Saving Throws</strong> Dex ${signed(dexMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
+  html += `<p class="sb-prop"><strong>Skills</strong> Perception ${signed(wisMod + PROF)}, Stealth ${signed(dexMod + PROF)}</p>`;
+  html += `<p class="sb-prop"><strong>Senses</strong> Darkvision 60 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
+  html += `<p class="sb-prop"><strong>Languages</strong> Draconic</p>`;
+  html += `<p class="sb-prop"><strong>Challenge</strong> — &nbsp;·&nbsp; <strong>Proficiency Bonus</strong> +${PROF}</p>`;
+  html += `<div class="sb-divider"></div>`;
+
+  // ── Passive ───────────────────────────────────────────────────────────────
+  html += `<div class="sb-section-title">Passive Ability</div>`;
+
+  html += `<div class="sb-ability">
+    <span class="sb-ability-name">Attrition.</span>
+    <p>Each time the dragon damages a creature with a melee attack, it applies one <b>[Erosion]</b> stack to that creature.</p>
+  </div>`;
+
+  html += `<div class="sb-divider"></div>`;
+
+  // ── Actions ───────────────────────────────────────────────────────────────
+  html += `<div class="sb-section-title">Actions</div>`;
+
+  html += `<div class="sb-ability">
+    <span class="sb-ability-name">Fault Line. <span class="tag">Melee Weapon Attack:</span></span>
+    <p>${faultHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${faultDmg}. On a hit, the target <b>loses resistance to one damage type</b> of the dragon's choice until the start of its next turn. If the target has no relevant resistances, it has <b>disadvantage on its next CON saving throw</b> instead.</p>
+  </div>`;
+
+  html += `<div class="sb-ability">
+    <span class="sb-ability-name">Erosion Cloud. <span class="tag">Breath Weapon (1/Short Rest, Concentration, 1 minute).</span></span>
+    <p>A <b>10 ft. radius</b> cloud of erosive force fills the area around the dragon and moves with it. Creatures that <b>enter the cloud</b> must succeed on a <b>DC 13 CON save</b> or gain <b>1 [Erosion]</b> stack. Creatures with <b>3 or more [Erosion]</b> stacks also have <b>disadvantage on CON saving throws</b> for as long as they remain inside the cloud.</p>
+  </div>`;
+
+  // ── [Erosion] definition ──────────────────────────────────────────────────
+  html += `<div class="sb-divider-thin"></div>`;
+  html += `<div class="sb-mechanic">
+    <div class="sb-mechanic-name">[Erosion]</div>
+    <p>A creature can have a maximum of <b>6</b> [Erosion] stacks. For every <b>2 stacks</b>, it suffers a <b>−1 penalty to AC</b>. <b>One stack</b> is removed at the end of each of its turns.</p>
+  </div>`;
+
+  html += `<div class="sb-divider-thin"></div>`;
+  document.getElementById('sbInner').innerHTML = html;
+}
+
+render();
+window.addEventListener('pageshow', e => { if (e.persisted) render(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
+
+(function() {
+  const cont = document.getElementById('particles');
+  for (let i = 0; i < 38; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = Math.random() * 1.8 + 0.3;
+    const isWarm = Math.random() < 0.5;
+    const color = isWarm
+      ? `rgba(200,184,144,${Math.random() * 0.18 + 0.03})`
+      : `rgba(160,155,148,${Math.random() * 0.14 + 0.03})`;
+    p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${color};animation-duration:${Math.random()*28+14}s;animation-delay:${Math.random()*28}s;`;
+    cont.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
