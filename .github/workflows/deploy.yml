@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+# Runs on pushes to main. Commits whose message contains "[skip ci]"
+# (e.g. the automated "Update dragon saves" bot) are skipped automatically
+# by GitHub Actions, so save-file bursts no longer trigger deployments.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Queue deployments instead of cancelling in-flight ones. This is what
+# prevents the "Deployment failed, try again later." collisions caused by
+# rapid successive pushes.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
