@@ -405,14 +405,6 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; color: var(--pa
 .save-indicator { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); opacity: 0; transition: opacity 0.4s; margin-top: 16px; height: 14px; }
 .save-indicator.show { opacity: 1; }
 
-.code-area { display: none; flex-direction: column; align-items: center; gap: 10px; max-width: 440px; margin: 16px auto 0; }
-.code-area textarea {
-  width: 100%; background: var(--ink-2); border: 1px solid var(--line-strong); border-radius: 5px;
-  color: var(--paper-soft); font-family: var(--font-mono); font-size: 0.78rem; padding: 10px 12px;
-  resize: vertical; outline: none; word-break: break-all;
-}
-.code-area textarea:focus { border-color: var(--accent-line); }
-
 .gh-panel { max-width: 440px; margin: 30px auto 0; text-align: center; }
 .gh-panel > summary {
   font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;

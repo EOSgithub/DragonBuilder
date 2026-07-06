@@ -57,12 +57,6 @@
 
     <div class="control-row">
       <button class="btn btn--ghost" id="resetBtn">⟳ Reset Descent</button>
-      <button class="btn btn--ghost" id="exportBtn">↑ Export Save Code</button>
-      <button class="btn btn--ghost" id="importBtn">↓ Import Save Code</button>
-    </div>
-    <div class="code-area" id="codeArea">
-      <textarea id="codeInput" rows="3" placeholder="Paste your save code here, then press Load"></textarea>
-      <button class="btn btn--accent" id="loadCodeBtn">Load Code</button>
     </div>
     <div class="save-indicator" id="saveIndicator">✓ Progress inscribed</div>
 
@@ -320,38 +314,10 @@ function rebuildUI() {
   updateFieldNote();
 }
 
-// ── RESET / EXPORT / IMPORT ──────────────────────────────────────────────────
+// ── RESET ────────────────────────────────────────────────────────────────────
 document.getElementById('resetBtn').addEventListener('click', () => {
   if (!confirm('Reset the entire descent? All progress for this dragon will be cleared.')) return;
   unlocked.clear(); saveState(); updateStats(); rebuildUI();
-});
-
-document.getElementById('exportBtn').addEventListener('click', () => {
-  const area = document.getElementById('codeArea'), input = document.getElementById('codeInput');
-  area.style.display = 'flex';
-  input.value = btoa(JSON.stringify([...unlocked]));
-  input.select();
-  try { document.execCommand('copy'); } catch(e) {}
-  alert('Save code copied to clipboard!\n\nYou can also copy it manually from the text box.');
-});
-
-document.getElementById('importBtn').addEventListener('click', () => {
-  const area = document.getElementById('codeArea');
-  area.style.display = area.style.display === 'flex' ? 'none' : 'flex';
-  if (area.style.display === 'flex') document.getElementById('codeInput').value = '';
-});
-
-document.getElementById('loadCodeBtn').addEventListener('click', () => {
-  const code = document.getElementById('codeInput').value.trim();
-  if (!code) return;
-  try {
-    const ids = JSON.parse(atob(code));
-    if (!Array.isArray(ids)) throw new Error();
-    unlocked.clear(); ids.forEach(id => unlocked.add(id));
-    saveState(); updateStats(); rebuildUI();
-    document.getElementById('codeArea').style.display = 'none';
-    document.getElementById('codeInput').value = '';
-  } catch(e) { alert('Invalid code. Check it and try again.'); }
 });
 
 // ── GITHUB SYNC ──────────────────────────────────────────────────────────────
