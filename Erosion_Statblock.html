@@ -50,7 +50,8 @@
 const SAVE_KEY = 'dragon_erosion';
 const TOTAL = 21;
 const BASE = { STR: 14, DEX: 10, CON: 16, INT: 10, WIS: 12, CHA: 10 };
-const PROF = 3;
+// Proficiency bonus by size/stage: Tiny 2, Small 3, Medium 3, Large 4, larger 5
+const PROF_BY_STAGE = [2, 3, 3, 4, 5];
 
 const STAGES = [
   { name: 'Wyrmling', size: 'Tiny',  hpMult: 10, eyebrow: '⏳ Erosion Wyrmling' },
@@ -62,7 +63,7 @@ function getStageIdx(n) { if (n >= 20) return 3; if (n >= 10) return 2; if (n >=
 
 const STAT_BONUSES = {
   p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
-  p2s1: { stat: 'DEX', bonus: 1 }, p2s2: { stat: 'DEX', bonus: 1 }, p2s3: { stat: 'DEX', bonus: 2 },
+  p2s1: { stat: 'STR', bonus: 1 }, p2s2: { stat: 'STR', bonus: 1 }, p2s3: { stat: 'STR', bonus: 2 },
   p3s1: { stat: 'WIS', bonus: 1 }, p3s2: { stat: 'WIS', bonus: 1 }, p3s3: { stat: 'WIS', bonus: 2 },
 };
 
@@ -91,6 +92,8 @@ function render() {
   const conMod = mod(stats.CON), dexMod = mod(stats.DEX), strMod = mod(stats.STR), wisMod = mod(stats.WIS);
   const stageIdx = getStageIdx(count);
   const stage = STAGES[stageIdx];
+  const PROF = PROF_BY_STAGE[stageIdx];
+  const breathDC = 8 + PROF + conMod;
   const hp = conMod * stage.hpMult + 13 * 2;
   document.getElementById('stageLine').textContent = stage.eyebrow;
 
@@ -131,7 +134,7 @@ function render() {
     <p>${faultHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${faultDmg}. On a hit, the target <b>loses resistance to one damage type</b> of the dragon's choice until the start of the target's next turn. If the target has no relevant resistances, it has <b>disadvantage on its next CON saving throw</b> instead.</p></div>`;
 
   html += `<div class="sb-ability"><span class="sb-ability-name">Erosion Cloud. <span class="tag">Breath Weapon (1/Short Rest, Concentration, 1 minute).</span></span>
-    <p>A <b>10 ft. radius</b> cloud of erosive force fills the area around the dragon and moves with it. Creatures that <b>enter the cloud</b> must succeed on a <b>DC 13 CON save</b> or gain <b>1 [Erosion]</b> stack. Creatures with <b>3 or more [Erosion]</b> stacks also have <b>disadvantage on CON saving throws</b> for as long as they remain inside the cloud.</p></div>`;
+    <p>A <b>10 ft. radius</b> cloud of erosive force fills the area around the dragon and moves with it. Creatures that <b>enter the cloud</b> must succeed on a <b>DC ${breathDC} CON save</b> or gain <b>1 [Erosion]</b> stack. Creatures with <b>3 or more [Erosion]</b> stacks also have <b>disadvantage on CON saving throws</b> for as long as they remain inside the cloud.</p></div>`;
 
   html += `<div class="sb-divider-thin"></div>`;
   html += `<div class="sb-mechanic">
