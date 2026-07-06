@@ -106,6 +106,7 @@ function render() {
 
   let breathRecharge = '1/Short Rest';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
+  if (unlocked.has('p1n3')) breathRecharge = 'Recharge 5–6';
 
   const speeds = '20 ft., burrow 40 ft.';
   const biteHit = signed(strMod + PROF);
@@ -161,6 +162,9 @@ function render() {
   if (unlocked.has('p3cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Adamant Carapace.</span>
     <p>The dragon's AC increases by an additional <b>+2</b>. The dragon is <b>immune to critical hits</b>. All damage the dragon deals to <b>structures</b> is maximized. The dragon takes <b>5 less damage</b> from all sources.</p></div>`;
 
+  if (unlocked.has('p1cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Petrifying Exhalation.</span>
+    <p>While inside the <b>Dust Veil</b>, the dragon and its Oathsworn deal an additional <b>1d4 bludgeoning damage</b> with all of their attacks.</p></div>`;
+
   html += `<div class="sb-divider"></div><div class="sb-section-title">Actions</div>`;
 
   if (unlocked.has('p2n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span>
@@ -171,30 +175,25 @@ function render() {
 
   if (unlocked.has('p2n2') && !unlocked.has('p2cap')) {
     const tailDmg = '2d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
-    html += `<div class="sb-ability"><span class="sb-ability-name">Bone Mace Tail. <span class="tag">Melee Weapon Attack:</span></span>
-      <p>${biteHit} to hit, reach 10 ft., one target. <b>Hit:</b> ${tailDmg}. The target must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn (can move or take an action, not both; no reactions).</p></div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Bone Mace Tail.</span>
+      <p>The dragon swings its bone-and-stone tail at one creature within <b>10 ft.</b> The target takes <b>${tailDmg}</b> and must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn (can move or take an action, not both; no reactions).</p></div>`;
   }
 
   if (unlocked.has('p2cap')) {
     const tailDmg = '4d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
     html += `<div class="sb-ability"><span class="sb-ability-name">Earthshaker Strike.</span>
-      <p>The dragon's tail crashes down in a <b>15 ft. cone behind it</b>. Each creature in the area must make a <b>STR save (DC ${tailDC})</b>. On a failure: <b>${tailDmg}</b>, <b>dazed</b> until end of next turn, and knocked <b>prone</b>. On a success, half damage only.</p></div>`;
+      <p>The dragon's Bone Mace Tail crashes down, striking all creatures in a <b>10 ft. half circle behind it</b>. Each creature takes <b>${tailDmg}</b> and must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn and knocked <b>prone</b>.</p></div>`;
   }
 
   let dustVeilArea = 'the dragon\'s occupied space';
   if (unlocked.has('p1n2')) dustVeilArea = 'a <b>15 ft. radius</b> around the dragon';
   let dustVeilExtras = '';
-  if (unlocked.has('p1n1')) {
-    dustVeilExtras += ` <b>Choking Grit.</b> Creatures that start their turn inside the veil must make a <b>CON save (DC ${breathDC})</b> or be <b>poisoned</b> until the start of their next turn.`;
-    if (unlocked.has('p1n2')) dustVeilExtras += ` Creatures that fail this save are also <b>deafened</b> until the end of their next turn.`;
-  }
-  if (unlocked.has('p1n3')) dustVeilExtras += ` <b>Abrasive Torrent.</b> Creatures that move through the veil take <b>2d6 slashing damage</b> per 5 ft. of movement inside it. Creatures that start their turn within the veil take <b>2d6 slashing</b> automatically. The veil's area is <b>difficult terrain</b>.`;
+  if (unlocked.has('p1n1')) dustVeilExtras += ` <b>Choking Grit.</b> While inside the veil, the dragon and its Oathsworn gain <b>Tremorsense</b>.`;
+  if (unlocked.has('p1n2')) dustVeilExtras += ` <b>Expanding Murk.</b> While inside the veil, the dragon and its Oathsworn gain <b>+1 AC</b>.`;
+  if (unlocked.has('p1n3')) dustVeilExtras += ` <b>Abrasive Torrent.</b> A creature that moves through the veil takes <b>1d4 slashing damage</b> per 5 ft. of movement inside it.`;
 
   html += `<div class="sb-ability"><span class="sb-ability-name">Dust Veil <span class="tag">(${breathRecharge}, Concentration, 1 min).</span></span>
     <p>The dragon exhales a roiling cloud of grit and stone-dust that fills ${dustVeilArea}, <b>heavily obscuring</b> vision within it. The cloud persists for up to 1 minute (concentration) and moves with the dragon.${dustVeilExtras}</p></div>`;
-
-  if (unlocked.has('p1cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Petrifying Exhalation <span class="tag">(1/Long Rest).</span></span>
-    <p>The dragon releases a concentrated pulse of mineralizing dust from the Dust Veil. All creatures currently inside the veil must make a <b>CON save (DC ${breathDC})</b>. On a failure they are <b>restrained</b> as their joints begin to calcify (repeat the save at the end of each of their turns to end the effect). On a <b>natural 1</b> they are instead <b>petrified</b> for 1 hour. The Dust Veil dissipates immediately after this exhalation.</p></div>`;
 
   if (unlocked.has('p3n3')) {
     html += `<div class="sb-section-title">Reactions</div>`;

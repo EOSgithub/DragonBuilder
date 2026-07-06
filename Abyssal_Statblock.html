@@ -106,7 +106,11 @@ function render() {
   let breathRecharge = '1/Short Rest', breathCone = '15 ft.', breathDmg = '3d10 cold';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
   if (unlocked.has('p1n2')) { breathCone = '20 ft.'; breathDmg = '4d10 cold'; }
-  const auraRange = unlocked.has('p3cap') ? '20 ft.' : '5 ft.';
+  // Pressure Aura radius scales with the Aura path (Deep Terror → Crushing Pressure → Abyssal Incarnation)
+  let auraRange = '5 ft.';
+  if (unlocked.has('p3n1'))  auraRange = '10 ft.';
+  if (unlocked.has('p3n2'))  auraRange = '15 ft.';
+  if (unlocked.has('p3cap')) auraRange = '20 ft.';
   const rendHit = signed(dexMod + PROF);
   const rendDmg = '2d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' slashing';
 
@@ -138,39 +142,35 @@ function render() {
   html += `<div class="sb-divider"></div>`;
 
   // Traits
-  let auraEffects = [];
-  if (!unlocked.has('p3n2')) {
-    auraEffects.push('The area within the aura is considered <b>difficult terrain</b> for hostile creatures.');
-  } else {
-    auraEffects.push('Hostile creatures that start their turn in the aura have their <b>speed halved</b> and have <b>disadvantage</b> on STR and DEX saving throws until the end of their next turn.');
-  }
-  if (unlocked.has('p3n1')) auraEffects.push(`Hostile creatures that start their turn in the aura must also succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>frightened</b> until the end of that turn.`);
-  if (unlocked.has('p3cap')) { const xDice = Math.max(1, Math.floor(count / 7)); auraEffects.push(`Creatures that start their turn in the aura take <b>${xDice}d12 force damage</b>.`); }
+  let auraEffects = ['The area within the aura is considered <b>difficult terrain</b> for hostile creatures.'];
+  if (unlocked.has('p3n1')) auraEffects.push(`<b>Deep Terror.</b> Hostile creatures that start their turn within the aura — or that enter it — must succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>frightened</b> of the dragon until the end of that turn.`);
+  if (unlocked.has('p3n2')) auraEffects.push('<b>Crushing Pressure.</b> Creatures that start their turn within the aura have their <b>speed halved</b> until the end of their turn.');
+  if (unlocked.has('p3cap')) auraEffects.push('<b>Abyssal Incarnation.</b> Creatures that start their turn in the aura take <b>2d8 force damage</b>, increasing by an additional 2d8 for each consecutive round they remain within it.');
   html += `<div class="sb-ability"><span class="sb-ability-name">Pressure Aura.</span>
-    <p>The wyrmling exudes crushing abyssal pressure in a <b>${auraRange} radius</b>. It gains <b>resistance to bludgeoning damage</b>. ${auraEffects.join(' ')}</p></div>`;
+    <p>The dragon exudes crushing abyssal pressure in a <b>${auraRange} radius</b>. It gains <b>resistance to bludgeoning damage</b>. ${auraEffects.join(' ')}</p></div>`;
 
   if (stageIdx >= 1) {
-    const coldDice = ['', '1d6', '2d6', '3d6'][stageIdx];
+    const coldDice = ['', '1d6', '2d6', '4d6'][stageIdx];
     let vbText = `The dragon's senses pierce the deep dark. Its blindsight extends to <b>${stage.blindsight}</b>. It is <b>immune to the frightened condition</b>. Creatures that hit it with a melee attack take <b>${coldDice} cold damage</b> from the void chill radiating off its scales.`;
     if (stageIdx >= 2) vbText += ` The dragon is also <b>immune to the charmed condition</b> and can breathe water freely.`;
     if (stageIdx >= 3) vbText += ` The dragon is <b>immune to psychic damage</b>, can see through magical darkness, and its cold damage <b>ignores resistance</b>.`;
     html += `<div class="sb-ability"><span class="sb-ability-name">Void-Born <span class="tag">(${stage.name}).</span></span><p>${vbText}</p></div>`;
   }
 
-  if (unlocked.has('p2n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Blood Frenzy.</span><p>When the dragon reduces a creature to <b>0 HP</b>, it may immediately make one additional attack as a <b>free action</b>. This effect can trigger once per turn.</p></div>`;
-  if (unlocked.has('p2cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Apex Predator.</span><p>Whenever the dragon reduces a creature to <b>30 HP or fewer</b> with a melee attack, it can attempt to instantly kill the target. The target must succeed on a <b>CON save (DC ${meleeDC})</b> or die.</p></div>`;
+  if (unlocked.has('p2n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Blood Frenzy.</span><p>Creatures damaged by the dragon's <b>Rend</b> attack gain <b>1 stack of [Bleeding]</b>. The dragon has <b>advantage on attack rolls</b> against creatures that are Bleeding.</p></div>`;
+  if (unlocked.has('p3n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Predation.</span><p>When the dragon or its Oathsworn hits a creature within the Pressure Aura that is <b>charmed</b> or <b>frightened</b>, it can choose to <b>end that condition</b> and turn the attack into a <b>critical hit</b>.</p></div>`;
+  if (unlocked.has('p2cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Apex Predator.</span><p>Whenever the dragon reduces a creature to <b>30 HP or fewer</b> with a melee attack, it can choose to <b>instantly kill</b> the target and immediately make one additional attack as a <b>free action</b>.</p></div>`;
 
   html += `<div class="sb-divider"></div><div class="sb-section-title">Actions</div>`;
 
-  if (unlocked.has('p2n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span><p>The dragon makes two <b>Rend</b> attacks.</p></div>`;
+  if (unlocked.has('p2n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span><p>The dragon makes <b>two Rend attacks</b>, or <b>one Rend and one Luring Light</b> attack.</p></div>`;
 
   html += `<div class="sb-ability"><span class="sb-ability-name">Rend. <span class="tag">Melee Weapon Attack:</span></span>
     <p>${rendHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${rendDmg}.</p></div>`;
 
   if (unlocked.has('p2n2')) {
-    const tailDmg = '2d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' bludgeoning';
-    html += `<div class="sb-ability"><span class="sb-ability-name">Tail Sweep. <span class="tag">Melee Weapon Attack:</span></span>
-      <p>The dragon sweeps its tail behind it in a wide arc. All creatures in that area must make a <b>DEX save (DC ${meleeDC})</b>. On a failure, they take <b>${tailDmg}</b> and are knocked <b>prone</b>. On a success, half damage only.</p></div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Luring Light.</span>
+      <p>A glowing light draws prey in. A creature within <b>30 ft.</b> must succeed on a <b>WIS save (DC ${meleeDC})</b> or be <b>charmed</b> and use its reaction to move toward the dragon. If it ends this movement within <b>5 ft.</b> of the dragon, the dragon can make one free <b>Rend</b> attack against it.</p></div>`;
   }
 
   let breathExtra = ' A creature that fails also <b>cannot speak</b> until the end of its next turn, as the cold steals the breath from its lungs.';
@@ -178,11 +178,8 @@ function render() {
   html += `<div class="sb-ability"><span class="sb-ability-name">Hadal Breath <span class="tag">(${breathRecharge}).</span></span>
     <p>The dragon exhales a ${breathCone} cone of freezing abyssal water. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathExtra}</p></div>`;
 
-  if (unlocked.has('p3n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Void Gaze <span class="tag">(1/Short Rest).</span></span>
-    <p>The dragon fixes its unblinking gaze on one creature within <b>30 ft.</b> The target must succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>paralyzed</b> until the end of its next turn.</p></div>`;
-
   if (unlocked.has('p1cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Leviathan's Wrath <span class="tag">(1/Long Rest).</span></span>
-    <p>The dragon unleashes a torrent of abyssal water in a <b>30 ft. cone</b>. Each creature must make a <b>STR save (DC ${breathDC})</b>. On a failure, they are pushed <b>15 ft.</b>, knocked <b>prone</b>, and take <b>6d10 cold damage</b> (half on success). Creatures pushed into a wall or solid object take an additional <b>2d10 bludgeoning</b> damage.</p></div>`;
+    <p>The dragon unleashes a torrent of black abyssal water in a <b>30 ft. cone</b>. Each creature in the area must make a <b>STR save (DC ${breathDC})</b> or be <b>pushed or pulled 30 ft.</b> and take <b>6d10 cold damage</b> (half as much damage on a success).</p></div>`;
 
   document.getElementById('sbInner').innerHTML = html;
 }

@@ -101,6 +101,24 @@ function render() {
   const faultHit = signed(strMod + PROF);
   const faultDmg = strMod > 0 ? `1d4+${strMod} piercing` : strMod < 0 ? `1d4${strMod} piercing` : '1d4 piercing';
 
+  // ── Skill-tree-driven values (source of truth: Erosion_Skill_Tree.html) ──────
+  // Erosion Cloud recharge & radius scale with the Erosion Cloud path (p1)
+  let cloudRecharge = '1/Short Rest', cloudRadius = '10 ft.';
+  if (unlocked.has('p1n1'))  cloudRecharge = 'Recharge 6';
+  if (unlocked.has('p1n2'))  cloudRecharge = 'Recharge 5–6';
+  if (unlocked.has('p1n3'))  { cloudRecharge = 'Recharge 4–6'; cloudRadius = '15 ft.'; }
+  if (unlocked.has('p1cap')) { cloudRecharge = 'Recharge 3–6'; cloudRadius = '20 ft.'; }
+  // Fault Line resistance-strip duration (p2n2 Lingering Fractures)
+  const stripDuration = unlocked.has('p2n2')
+    ? "until the <b>end of the dragon's next turn</b>"
+    : "until the <b>start of the target's next turn</b>";
+  // [Erosion] max stacks scale with the Attrition path (p3)
+  let maxStacks = 4;
+  if (unlocked.has('p3n1'))  maxStacks = 5;
+  if (unlocked.has('p3n2'))  maxStacks = 6;
+  if (unlocked.has('p3n3'))  maxStacks = 7;
+  if (unlocked.has('p3cap')) maxStacks = 8;
+
   let html = `
     <div class="sb-name">Erosion Dragon ${stage.name}</div>
     <div class="sb-type"><em>${stage.size} Dragon, Neutral</em></div>
@@ -124,22 +142,52 @@ function render() {
   html += `<p class="sb-prop"><span class="sb-label">Challenge</span> — &nbsp;·&nbsp; <span class="sb-label">Proficiency Bonus</span> +${PROF}</p>`;
   html += `<div class="sb-divider"></div>`;
 
-  html += `<div class="sb-section-title">Passive Ability</div>`;
+  html += `<div class="sb-section-title">Passive Abilities</div>`;
   html += `<div class="sb-ability"><span class="sb-ability-name">Attrition.</span>
     <p>Each time the dragon damages a creature with a melee attack, it applies one <b>[Erosion]</b> stack to that creature.</p></div>`;
 
+  if (unlocked.has('p2n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Rending Bite.</span>
+    <p>On a hit with <b>Fault Line</b>, the dragon may strip <b>two</b> damage-type resistances instead of one. If the target has only one relevant resistance, the second choice applies the <b>CON disadvantage</b> fallback as normal.</p></div>`;
+
+  if (unlocked.has('p3cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Inevitable Decay.</span>
+    <p>Choose one ability when this is unlocked: <b>WIS, INT, or CHA</b>. A creature with any [Erosion] stacks applies its <b>AC penalty</b> from [Erosion] to <b>saving throws of the chosen type</b> as well.</p></div>`;
+
   html += `<div class="sb-divider"></div><div class="sb-section-title">Actions</div>`;
 
+  if (unlocked.has('p2n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span>
+    <p>The dragon makes <b>two Fault Line attacks</b>.</p></div>`;
+
   html += `<div class="sb-ability"><span class="sb-ability-name">Fault Line. <span class="tag">Melee Weapon Attack:</span></span>
-    <p>${faultHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${faultDmg}. On a hit, the target <b>loses resistance to one damage type</b> of the dragon's choice until the start of the target's next turn. If the target has no relevant resistances, it has <b>disadvantage on its next CON saving throw</b> instead.</p></div>`;
+    <p>${faultHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${faultDmg}. On a hit, the target <b>loses resistance to one damage type</b> of the dragon's choice ${stripDuration}. If the target has no relevant resistances, it has <b>disadvantage on its next CON saving throw</b> instead.</p></div>`;
 
-  html += `<div class="sb-ability"><span class="sb-ability-name">Erosion Cloud. <span class="tag">Breath Weapon (1/Short Rest, Concentration, 1 minute).</span></span>
-    <p>A <b>10 ft. radius</b> cloud of erosive force fills the area around the dragon and moves with it. Creatures that <b>enter the cloud</b> must succeed on a <b>DC ${breathDC} CON save</b> or gain <b>1 [Erosion]</b> stack. Creatures with <b>3 or more [Erosion]</b> stacks also have <b>disadvantage on CON saving throws</b> for as long as they remain inside the cloud.</p></div>`;
+  // Erosion Cloud (base) + path modifications
+  let cloudExtra = '';
+  if (unlocked.has('p1n1')) cloudExtra += ` Instead of an emanation, the cloud can be placed as a <b>fixed 10 ft. radius sphere</b> in any space within <b>30 ft.</b> of the dragon.`;
+  if (unlocked.has('p1n2')) cloudExtra += ` Creatures inside the cloud have <b>disadvantage on the CON save</b> to remove [Erosion] stacks.`;
+  if (unlocked.has('p1n3')) cloudExtra += ` As a <b>bonus action</b>, the dragon can move the cloud up to <b>30 ft.</b> in any direction.`;
+  const cloudTag = unlocked.has('p1cap')
+    ? `${cloudRecharge}, Concentration or none (1/Long Rest), 1 minute`
+    : `${cloudRecharge}, Concentration, 1 minute`;
+  if (unlocked.has('p1cap')) cloudExtra += ` <b>Timeless Shroud (1/Long Rest):</b> the dragon may forgo Concentration — the cloud persists for its <b>full 1-minute duration on its own</b>, with no concentration checks.`;
+  html += `<div class="sb-ability"><span class="sb-ability-name">Erosion Cloud. <span class="tag">Breath Weapon (${cloudTag}).</span></span>
+    <p>A <b>${cloudRadius} radius</b> cloud of erosive force fills the area around the dragon and moves with it. Creatures that <b>enter the cloud</b> must succeed on a <b>DC ${breathDC} CON save</b> or gain <b>1 [Erosion]</b> stack. Creatures with <b>3 or more [Erosion]</b> stacks also have <b>disadvantage on CON saving throws</b> for as long as they remain inside the cloud.${cloudExtra}</p></div>`;
 
+  if (unlocked.has('p2cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Geological Memory <span class="tag">(1/Short Rest).</span></span>
+    <p>The dragon makes a single <b>Fault Line</b> attack. On a hit, it deals normal damage plus <b>+2d8 per resistance stripped this combat</b>. The target must then succeed on a <b>DC 13 CON save</b> or every resistance stripped from it <b>remains stripped until it completes a long rest</b>.</p></div>`;
+
+  // [Erosion] mechanic — max stacks and removal rules scale with the Attrition path
+  let erosionRules = `A creature can have a maximum of <b>${maxStacks}</b> [Erosion] stacks. For every <b>2 stacks</b>, it suffers a <b>−1 penalty to AC</b>.`;
+  if (unlocked.has('p3n1')) {
+    erosionRules += ` Stacks no longer fall off automatically: at the end of its turn, a creature removes one stack only on a successful <b>DC 13 CON save</b>.`;
+  } else {
+    erosionRules += ` <b>One stack</b> is removed at the end of each of its turns.`;
+  }
+  if (unlocked.has('p3n2')) erosionRules += ` A creature with <b>4 or more</b> stacks has its <b>speed reduced by 10 ft.</b>`;
+  if (unlocked.has('p3n3')) erosionRules += ` A creature with <b>2+</b> stacks cannot take the <b>Disengage</b> action; at <b>4+</b> it also cannot <b>Dodge</b>; at <b>6+</b> it also cannot <b>Dash</b>.`;
   html += `<div class="sb-divider-thin"></div>`;
   html += `<div class="sb-mechanic">
     <div class="sb-mechanic-name">[Erosion]</div>
-    <p>A creature can have a maximum of <b>4</b> [Erosion] stacks. For every <b>2 stacks</b>, it suffers a <b>−1 penalty to AC</b>. <b>One stack</b> is removed at the end of each of its turns.</p></div>`;
+    <p>${erosionRules}</p></div>`;
 
   document.getElementById('sbInner').innerHTML = html;
 }
