@@ -4,193 +4,49 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Abyssal Dragon — Stat Block</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #050810;
-  --accent: #00c8d7;
-  --divider: rgba(0,200,215,0.3);
-  --text: #c8d8f0;
-  --text-dim: #5a7aaa;
-  --text-muted: #3a5070;
-  --panel-bg: rgba(0,12,30,0.94);
-  --panel-border: rgba(0,200,215,0.22);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Crimson Pro', Georgia, serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(ellipse 70% 60% at 25% 40%, rgba(0,50,110,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 80% 70%, rgba(0,20,50,0.2) 0%, transparent 50%);
-  pointer-events: none; z-index: 0;
-}
-.particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-.particle { position: absolute; border-radius: 50%; animation: float linear infinite; }
-@keyframes float {
-  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
-  10%  { opacity: 0.8; } 90% { opacity: 0.3; }
-  100% { transform: translateY(-10px) scale(1); opacity: 0; }
-}
-.wrapper {
-  position: relative; z-index: 1;
-  max-width: 680px; margin: 0 auto; padding: 40px 20px 60px;
-}
-.page-nav {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 32px; gap: 12px;
-}
-.nav-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--text-muted); text-decoration: none;
-  padding: 7px 16px; border: 1px solid rgba(0,200,215,0.12);
-  border-radius: 6px; transition: all 0.3s; white-space: nowrap;
-}
-.nav-btn:hover { color: var(--accent); border-color: rgba(0,200,215,0.38); }
-.dragon-header { text-align: center; margin-bottom: 22px; }
-.dragon-header .eyebrow {
-  font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 5px;
-  color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
-}
-.dragon-header h1 {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(1.6rem, 5vw, 2.6rem); font-weight: 900; color: #fff;
-  text-shadow: 0 0 30px rgba(0,200,215,0.7), 0 0 60px rgba(0,200,215,0.2);
-  letter-spacing: 2px; margin-bottom: 6px;
-}
-.dragon-header .subtitle {
-  font-family: 'Cinzel', serif; font-size: 0.72rem;
-  color: var(--text-dim); letter-spacing: 2px;
-}
-.mastery-badge {
-  display: flex; align-items: center; justify-content: center;
-  gap: 12px; margin-bottom: 24px;
-}
-.mastery-badge .count {
-  font-family: 'Cinzel', serif; font-size: 0.62rem;
-  letter-spacing: 2px; color: var(--text-muted); white-space: nowrap;
-}
-.mastery-bar-bg {
-  flex: 1; max-width: 220px; height: 3px;
-  background: rgba(0,200,215,0.1); border-radius: 2px; overflow: hidden;
-}
-.mastery-bar-fill {
-  height: 100%; background: linear-gradient(to right, var(--accent), #80e8f0);
-  border-radius: 2px; box-shadow: 0 0 6px rgba(0,200,215,0.5);
-  transition: width 0.5s ease;
-}
-.statblock {
-  background: var(--panel-bg); border: 1px solid var(--panel-border);
-  border-radius: 4px; overflow: hidden;
-  box-shadow: 0 0 40px rgba(0,200,215,0.07), 0 8px 40px rgba(0,0,0,0.5);
-}
-.statblock::before, .statblock::after {
-  content: ''; display: block; height: 5px;
-  background: linear-gradient(to right, transparent, rgba(0,200,215,0.7), rgba(0,200,215,0.4), rgba(0,200,215,0.7), transparent);
-  opacity: 0.6;
-}
-.sb-inner { padding: 20px 26px; }
-.sb-name {
-  font-family: 'Cinzel Decorative', serif; font-size: 1.25rem; font-weight: 700;
-  color: var(--accent); text-shadow: 0 0 14px rgba(0,200,215,0.35); margin-bottom: 2px;
-}
-.sb-type { font-size: 0.9rem; font-style: italic; color: var(--text-dim); margin-bottom: 12px; }
-.sb-divider {
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--divider), transparent);
-  margin: 13px 0;
-}
-.sb-divider-thin { height: 1px; background: rgba(0,200,215,0.07); margin: 9px 0; }
-.sb-basics p { font-size: 0.9rem; line-height: 1.75; }
-.sb-basics p strong {
-  font-family: 'Cinzel', serif; font-size: 0.72rem;
-  letter-spacing: 1px; color: var(--accent);
-}
-.sb-scores {
-  display: grid; grid-template-columns: repeat(6, 1fr);
-  text-align: center; gap: 4px; margin: 14px 0;
-}
-.sb-score-cell { padding: 6px 2px; }
-.sb-score-label {
-  font-family: 'Cinzel', serif; font-size: 0.62rem;
-  letter-spacing: 2px; color: var(--accent); margin-bottom: 4px;
-}
-.sb-score-val {
-  font-family: 'Cinzel Decorative', serif; font-size: 1rem;
-  font-weight: 700; color: #fff;
-}
-.sb-score-mod { font-size: 0.78rem; color: var(--text-dim); }
-.sb-prop { font-size: 0.88rem; line-height: 1.7; }
-.sb-prop strong {
-  font-family: 'Cinzel', serif; font-size: 0.72rem;
-  letter-spacing: 1px; color: var(--accent);
-}
-.sb-section-title {
-  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 3px;
-  text-transform: uppercase; color: var(--accent);
-  border-bottom: 1px solid rgba(0,200,215,0.2);
-  padding-bottom: 6px; margin-bottom: 12px; margin-top: 14px;
-}
-.sb-ability { margin-bottom: 10px; }
-.sb-ability-name {
-  font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 600;
-  font-style: italic; color: var(--text);
-}
-.sb-ability-name .tag {
-  font-style: normal; font-size: 0.7rem;
-  color: var(--text-dim); margin-left: 2px;
-}
-.sb-ability p { font-size: 0.87rem; line-height: 1.55; color: #8aafc8; margin-top: 3px; }
-.sb-ability p b { color: var(--text); }
-.sb-locked-hint {
-  font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 2px;
-  color: var(--text-muted); text-align: center; margin-top: 16px; opacity: 0.6;
-}
-@media (max-width: 500px) {
-  .sb-score-label { font-size: 0.58rem; letter-spacing: 1px; }
-  .sb-score-val { font-size: 0.9rem; }
-  .sb-name { font-size: 1.05rem; }
-  .page-nav { flex-wrap: wrap; justify-content: center; }
-}
-@media (hover: none) { .nav-btn:active { color: var(--accent); } }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="codex.css">
 </head>
-<body>
+<body data-dragon="abyssal" data-page="statblock">
 
-<div class="particles" id="particles"></div>
+<main class="shell">
 
-<div class="wrapper">
-  <nav class="page-nav">
-    <a href="index.html" class="nav-btn">← Wyrmling Codex</a>
-    <a href="Abyssal_Skill_Tree.html" class="nav-btn">Skill Tree →</a>
+  <nav class="topnav">
+    <a href="index.html" class="btn btn--ghost"><span class="arrow" style="transform:rotate(180deg)">→</span> Codex</a>
+    <a href="Abyssal_Skill_Tree.html" class="btn btn--ghost">Skill Tree <span class="arrow">→</span></a>
   </nav>
 
-  <div class="dragon-header">
-    <div class="eyebrow" id="stageEyebrow">⚫ Deep Sea Wyrmling</div>
+  <header class="plate-head reveal r1">
+    <span class="sigil" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <path d="M8 15 Q24 25 40 15" opacity=".95"/>
+        <path d="M13 23 Q24 30 35 23" opacity=".7"/>
+        <path d="M18 31 Q24 35 30 31" opacity=".5"/>
+        <line x1="24" y1="5" x2="24" y2="39" stroke-dasharray="1 3"/>
+        <path d="M24 41 l-3.2 -5.5 h6.4 z" fill="currentColor" stroke="none"/>
+      </svg>
+    </span>
+    <div class="binom">Draco abyssalis</div>
     <h1>Abyssal Dragon</h1>
-    <div class="subtitle">Stat Block — Current Form</div>
-  </div>
+    <div class="stage-line" id="stageLine">⚫ Abyssal Wyrmling</div>
+  </header>
 
-  <div class="mastery-badge">
+  <div class="plate-mastery reveal r2">
     <span class="count" id="masteryCount">0 / 21 Mastery</span>
-    <div class="mastery-bar-bg"><div class="mastery-bar-fill" id="masteryFill" style="width:0%"></div></div>
+    <div class="spec-track"><div class="spec-track-fill" id="masteryFill"></div></div>
   </div>
 
-  <div class="statblock">
-    <div class="sb-inner" id="sbInner"></div>
-  </div>
+  <article class="plate reveal r2">
+    <div class="plate-rule"></div>
+    <div class="plate-inner" id="sbInner"></div>
+    <div class="plate-rule"></div>
+  </article>
 
-  <div class="sb-locked-hint">Sblocca le mastery nella Skill Tree per potenziare il drago</div>
-</div>
+  <p class="sb-locked-hint reveal r3">Unlock mastery in the Skill Tree to empower the dragon</p>
+
+</main>
 
 <script>
 const SAVE_KEY = 'dragon_villis';
@@ -204,9 +60,7 @@ const STAGES = [
   { name: 'Young',   size: 'Medium', hpMult: 30, eyebrow: '⚫ Abyssal Young',    blindsight: '60 ft.'  },
   { name: 'Adult',   size: 'Large',  hpMult: 40, eyebrow: '⚫ Abyssal Adult',    blindsight: '90 ft.'  },
 ];
-function getStageIdx(n) {
-  if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0;
-}
+function getStageIdx(n) { if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0; }
 
 const STAT_BONUSES = {
   p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
@@ -218,16 +72,13 @@ function getUnlocked() {
   try { const s = localStorage.getItem(SAVE_KEY); return new Set(s ? JSON.parse(s) : []); }
   catch(e) { return new Set(); }
 }
-
 function mod(v) { return Math.floor((v - 10) / 2); }
 function modStr(v) { const m = mod(v); return (m >= 0 ? '+' : '') + m; }
 function signed(n) { return (n >= 0 ? '+' : '') + n; }
 
 function computeStats(unlocked) {
   const stats = { ...BASE };
-  for (const [id, nb] of Object.entries(STAT_BONUSES)) {
-    if (unlocked.has(id)) stats[nb.stat] += nb.bonus;
-  }
+  for (const [id, nb] of Object.entries(STAT_BONUSES)) if (unlocked.has(id)) stats[nb.stat] += nb.bonus;
   return stats;
 }
 
@@ -239,89 +90,59 @@ function render() {
   document.getElementById('masteryCount').textContent = count + ' / ' + TOTAL + ' Mastery';
   document.getElementById('masteryFill').style.width = (count / TOTAL * 100) + '%';
 
-  const conMod = mod(stats.CON);
-  const dexMod = mod(stats.DEX);
-  const strMod = mod(stats.STR);
-  const wisMod = mod(stats.WIS);
-  const chaMod = mod(stats.CHA);
-
+  const conMod = mod(stats.CON), dexMod = mod(stats.DEX), strMod = mod(stats.STR), wisMod = mod(stats.WIS), chaMod = mod(stats.CHA);
   const stageIdx = getStageIdx(count);
   const stage = STAGES[stageIdx];
   const hp = conMod * stage.hpMult + 11 * 2;
-
-  document.getElementById('stageEyebrow').textContent = stage.eyebrow;
+  document.getElementById('stageLine').textContent = stage.eyebrow;
 
   const ac = 13 + dexMod;
-  const acFormula = `13 + DEX ${signed(dexMod)}`;
-
-  // DCs
   const breathDC = 8 + PROF + conMod;
   const auraDC   = 8 + PROF + chaMod;
 
-  // Breath weapon
-  let breathRecharge = '1/Short Rest';
-  let breathCone = '15 ft.';
-  let breathDmg  = '3d10 cold';
+  let breathRecharge = '1/Short Rest', breathCone = '15 ft.', breathDmg = '3d10 cold';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
   if (unlocked.has('p1n2')) { breathCone = '20 ft.'; breathDmg = '4d10 cold'; }
-
-  // Aura range
   const auraRange = unlocked.has('p3cap') ? '20 ft.' : '5 ft.';
-
-  // Attack
   const rendHit = signed(dexMod + PROF);
   const rendDmg = '2d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' slashing';
-
-  // ── Build HTML ────────────────────────────────────────────────────────────
 
   let html = `
     <div class="sb-name">Abyssal Dragon ${stage.name} — Villis</div>
     <div class="sb-type"><em>${stage.size} Dragon, Neutral</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
-      <p><strong>Armor Class</strong> ${ac} (13 + DEX mod.)</p>
-      <p><strong>Hit Points</strong> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
-      <p><strong>Speed</strong> 20 ft., swim 40 ft.</p>
+      <p><span class="sb-label">Armor Class</span> ${ac} (13 + DEX mod.)</p>
+      <p><span class="sb-label">Hit Points</span> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
+      <p><span class="sb-label">Speed</span> 20 ft., swim 40 ft.</p>
     </div>
     <div class="sb-divider"></div>
     <div class="sb-scores">`;
 
   for (const k of ['STR','DEX','CON','INT','WIS','CHA']) {
-    html += `<div class="sb-score-cell">
-      <div class="sb-score-label">${k}</div>
-      <div class="sb-score-val">${stats[k]}</div>
-      <div class="sb-score-mod">${modStr(stats[k])}</div>
-    </div>`;
+    html += `<div class="sb-score-cell"><div class="sb-score-k">${k}</div><div class="sb-score-v">${stats[k]}</div><div class="sb-score-m">${modStr(stats[k])}</div></div>`;
   }
-
   html += `</div><div class="sb-divider"></div>`;
-  html += `<p class="sb-prop"><strong>Saving Throws</strong> Dex ${signed(dexMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
-  html += `<p class="sb-prop"><strong>Skills</strong> Perception ${signed(wisMod + PROF)}, Stealth ${signed(dexMod + PROF)}</p>`;
-  html += `<p class="sb-prop"><strong>Damage Resistances</strong> bludgeoning (Pressure Aura)`;
+  html += `<p class="sb-prop"><span class="sb-label">Saving Throws</span> Dex ${signed(dexMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Skills</span> Perception ${signed(wisMod + PROF)}, Stealth ${signed(dexMod + PROF)}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Damage Resistances</span> bludgeoning (Pressure Aura)`;
   if (unlocked.has('p1n1')) html += ', cold';
   html += `</p>`;
   const blindsight = stageIdx >= 3 ? `Blindsight 90 ft., Truesight 30 ft.` : `Blindsight ${stage.blindsight}`;
-  html += `<p class="sb-prop"><strong>Senses</strong> ${blindsight}, Darkvision 60 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
-  html += `<p class="sb-prop"><strong>Languages</strong> Draconic</p>`;
-  html += `<p class="sb-prop"><strong>Challenge</strong> — &nbsp;·&nbsp; <strong>Proficiency Bonus</strong> +${PROF}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Senses</span> ${blindsight}, Darkvision 60 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Languages</span> Draconic</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Challenge</span> — &nbsp;·&nbsp; <span class="sb-label">Proficiency Bonus</span> +${PROF}</p>`;
   html += `<div class="sb-divider"></div>`;
 
-  // ── Traits ────────────────────────────────────────────────────────────────
-
-  // Pressure Aura — always present, masteries enhance it
+  // Traits
   let auraEffects = [];
   if (!unlocked.has('p3n2')) {
     auraEffects.push('The area within the aura is considered <b>difficult terrain</b> for hostile creatures.');
   } else {
     auraEffects.push('Hostile creatures that start their turn in the aura have their <b>speed halved</b> and have <b>disadvantage</b> on STR and DEX saving throws until the end of their next turn.');
   }
-  if (unlocked.has('p3n1')) {
-    auraEffects.push(`Hostile creatures that start their turn in the aura must also succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>frightened</b> until the end of that turn.`);
-  }
-  if (unlocked.has('p3cap')) {
-    const xDice = Math.max(1, Math.floor(count / 7));
-    auraEffects.push(`Creatures that start their turn in the aura take <b>${xDice}d12 force damage</b>.`);
-  }
+  if (unlocked.has('p3n1')) auraEffects.push(`Hostile creatures that start their turn in the aura must also succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>frightened</b> until the end of that turn.`);
+  if (unlocked.has('p3cap')) { const xDice = Math.max(1, Math.floor(count / 7)); auraEffects.push(`Creatures that start their turn in the aura take <b>${xDice}d12 force damage</b>.`); }
   html += `<div class="sb-ability"><span class="sb-ability-name">Pressure Aura.</span>
     <p>The wyrmling exudes crushing abyssal pressure in a <b>${auraRange} radius</b>. It gains <b>resistance to bludgeoning damage</b>. ${auraEffects.join(' ')}</p></div>`;
 
@@ -330,86 +151,63 @@ function render() {
     let vbText = `The dragon's senses pierce the deep dark. Its blindsight extends to <b>${stage.blindsight}</b>. It is <b>immune to the frightened condition</b>. Creatures that hit it with a melee attack take <b>${coldDice} cold damage</b> from the void chill radiating off its scales.`;
     if (stageIdx >= 2) vbText += ` The dragon is also <b>immune to the charmed condition</b> and can breathe water freely.`;
     if (stageIdx >= 3) vbText += ` The dragon is <b>immune to psychic damage</b>, can see through magical darkness, and its cold damage <b>ignores resistance</b>.`;
-    html += `<div class="sb-ability"><span class="sb-ability-name">Void-Born <span class="tag">(${stage.name}).</span></span>
-      <p>${vbText}</p></div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Void-Born <span class="tag">(${stage.name}).</span></span><p>${vbText}</p></div>`;
   }
 
-  if (unlocked.has('p2n3')) {
-    html += `<div class="sb-ability"><span class="sb-ability-name">Blood Frenzy.</span>
-      <p>When the dragon reduces a creature to <b>0 HP</b>, it may immediately make one additional attack as a <b>free action</b>. This effect can trigger once per turn.</p></div>`;
-  }
+  if (unlocked.has('p2n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Blood Frenzy.</span><p>When the dragon reduces a creature to <b>0 HP</b>, it may immediately make one additional attack as a <b>free action</b>. This effect can trigger once per turn.</p></div>`;
+  if (unlocked.has('p2cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Apex Predator.</span><p>Whenever the dragon reduces a creature to <b>30 HP or fewer</b> with a melee attack, it can attempt to instantly kill the target. The target must succeed on a <b>CON save (DC ${8 + PROF + strMod})</b> or die.</p></div>`;
 
-  if (unlocked.has('p2cap')) {
-    html += `<div class="sb-ability"><span class="sb-ability-name">Apex Predator.</span>
-      <p>Whenever the dragon reduces a creature to <b>30 HP or fewer</b> with a melee attack, it can attempt to instantly kill the target. The target must succeed on a <b>CON save (DC ${8 + PROF + strMod})</b> or die.</p></div>`;
-  }
+  html += `<div class="sb-divider"></div><div class="sb-section-title">Actions</div>`;
 
-  html += `<div class="sb-divider"></div>`;
+  if (unlocked.has('p2n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span><p>The dragon makes two <b>Rend</b> attacks.</p></div>`;
 
-  // ── Actions ───────────────────────────────────────────────────────────────
-  html += `<div class="sb-section-title">Actions</div>`;
-
-  if (unlocked.has('p2n1')) {
-    html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span>
-      <p>The dragon makes two <b>Rend</b> attacks.</p></div>`;
-  }
-
-  html += `<div class="sb-ability">
-    <span class="sb-ability-name">Rend. <span class="tag">Melee Weapon Attack:</span></span>
-    <p>${rendHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${rendDmg}.</p>
-  </div>`;
+  html += `<div class="sb-ability"><span class="sb-ability-name">Rend. <span class="tag">Melee Weapon Attack:</span></span>
+    <p>${rendHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${rendDmg}.</p></div>`;
 
   if (unlocked.has('p2n2')) {
     const tailDmg = '2d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' bludgeoning';
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Tail Sweep. <span class="tag">Melee Weapon Attack:</span></span>
-      <p>The dragon sweeps its tail behind it in a wide arc. All creatures in that area must make a <b>DEX save (DC ${8 + PROF + dexMod})</b>. On a failure, they take <b>${tailDmg}</b> and are knocked <b>prone</b>. On a success, half damage only.</p>
-    </div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Tail Sweep. <span class="tag">Melee Weapon Attack:</span></span>
+      <p>The dragon sweeps its tail behind it in a wide arc. All creatures in that area must make a <b>DEX save (DC ${8 + PROF + dexMod})</b>. On a failure, they take <b>${tailDmg}</b> and are knocked <b>prone</b>. On a success, half damage only.</p></div>`;
   }
 
-  // Hadal Breath Weapon
   let breathExtra = ' A creature that fails also <b>cannot speak</b> until the end of its next turn, as the cold steals the breath from its lungs.';
-  if (unlocked.has('p1n3')) {
-    breathExtra += ' It is also <b>slowed</b> (speed halved, −2 AC and DEX saves, no reactions) until the end of its next turn.';
-  }
-  html += `<div class="sb-ability">
-    <span class="sb-ability-name">Hadal Breath <span class="tag">(${breathRecharge}).</span></span>
-    <p>The dragon exhales a ${breathCone} cone of freezing abyssal water. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathExtra}</p>
-  </div>`;
+  if (unlocked.has('p1n3')) breathExtra += ' It is also <b>slowed</b> (speed halved, −2 AC and DEX saves, no reactions) until the end of its next turn.';
+  html += `<div class="sb-ability"><span class="sb-ability-name">Hadal Breath <span class="tag">(${breathRecharge}).</span></span>
+    <p>The dragon exhales a ${breathCone} cone of freezing abyssal water. Each creature in the area must make a <b>CON save (DC ${breathDC})</b>. On a failure, a creature takes <b>${breathDmg}</b> damage; half as much on a success.${breathExtra}</p></div>`;
 
-  if (unlocked.has('p3n3')) {
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Void Gaze <span class="tag">(1/Short Rest).</span></span>
-      <p>The dragon fixes its unblinking gaze on one creature within <b>30 ft.</b> The target must succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>paralyzed</b> until the end of its next turn.</p>
-    </div>`;
-  }
+  if (unlocked.has('p3n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Void Gaze <span class="tag">(1/Short Rest).</span></span>
+    <p>The dragon fixes its unblinking gaze on one creature within <b>30 ft.</b> The target must succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>paralyzed</b> until the end of its next turn.</p></div>`;
 
-  if (unlocked.has('p1cap')) {
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Leviathan's Wrath <span class="tag">(1/Long Rest).</span></span>
-      <p>The dragon unleashes a torrent of abyssal water in a <b>30 ft. cone</b>. Each creature must make a <b>STR save (DC ${breathDC})</b>. On a failure, they are pushed <b>15 ft.</b>, knocked <b>prone</b>, and take <b>6d10 cold damage</b> (half on success). Creatures pushed into a wall or solid object take an additional <b>2d10 bludgeoning</b> damage.</p>
-    </div>`;
-  }
+  if (unlocked.has('p1cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Leviathan's Wrath <span class="tag">(1/Long Rest).</span></span>
+    <p>The dragon unleashes a torrent of abyssal water in a <b>30 ft. cone</b>. Each creature must make a <b>STR save (DC ${breathDC})</b>. On a failure, they are pushed <b>15 ft.</b>, knocked <b>prone</b>, and take <b>6d10 cold damage</b> (half on success). Creatures pushed into a wall or solid object take an additional <b>2d10 bludgeoning</b> damage.</p></div>`;
 
-  html += `<div class="sb-divider-thin"></div>`;
   document.getElementById('sbInner').innerHTML = html;
 }
 
+// ── GITHUB AUTO-LOAD ─────────────────────────────────────────────────────────
+const GH_SAVE_PATH = 'saves/' + SAVE_KEY + '.json';
+function getGHConfig() {
+  return { owner: localStorage.getItem('gh_owner') || '', repo: localStorage.getItem('gh_repo') || '', token: localStorage.getItem('gh_token') || '' };
+}
+function ghConfigured() { const c = getGHConfig(); return !!(c.owner && c.repo && c.token); }
+async function loadFromGitHub() {
+  if (!ghConfigured()) return;
+  const { owner, repo, token } = getGHConfig();
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
+    if (!res.ok) return;
+    const data = await res.json();
+    const parsed = JSON.parse(atob(data.content.replace(/\s/g, '')));
+    localStorage.setItem(SAVE_KEY, JSON.stringify(parsed.unlocked || []));
+    render();
+  } catch(e) {}
+}
+
 render();
+loadFromGitHub();
 window.addEventListener('pageshow', e => { if (e.persisted) render(); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
-
-(function() {
-  const cont = document.getElementById('particles');
-  for (let i = 0; i < 35; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const s = Math.random() * 2 + 0.5;
-    const a = Math.random() * 0.28 + 0.05;
-    p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;background:rgba(0,200,215,${a});animation-duration:${Math.random()*22+10}s;animation-delay:${Math.random()*22}s;`;
-    cont.appendChild(p);
-  }
-})();
 </script>
 </body>
 </html>

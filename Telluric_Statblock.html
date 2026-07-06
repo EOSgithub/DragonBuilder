@@ -4,193 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Telluric Dragon — Stat Block</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0d0805;
-  --accent: #e89c1f;
-  --divider: rgba(232,156,31,0.3);
-  --text: #d4b78a;
-  --text-dim: #a08560;
-  --text-muted: #6a4a25;
-  --panel-bg: rgba(20,12,4,0.94);
-  --panel-border: rgba(232,156,31,0.2);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Crimson Pro', Georgia, serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(ellipse 70% 60% at 30% 70%, rgba(160,70,15,0.3) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 80% 30%, rgba(80,40,10,0.2) 0%, transparent 50%);
-  pointer-events: none; z-index: 0;
-}
-.particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-.particle { position: absolute; border-radius: 50%; animation: drift linear infinite; }
-@keyframes drift {
-  0%   { transform: translateY(110vh) translateX(0) scale(0); opacity: 0; }
-  10%  { opacity: 0.8; } 90% { opacity: 0.3; }
-  100% { transform: translateY(-10px) translateX(-10px) scale(0.7); opacity: 0; }
-}
-.wrapper {
-  position: relative; z-index: 1;
-  max-width: 680px; margin: 0 auto; padding: 40px 20px 60px;
-}
-.page-nav {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 32px; gap: 12px;
-}
-.nav-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--text-muted); text-decoration: none;
-  padding: 7px 16px; border: 1px solid rgba(232,156,31,0.12);
-  border-radius: 6px; transition: all 0.3s; white-space: nowrap;
-}
-.nav-btn:hover { color: var(--accent); border-color: rgba(232,156,31,0.38); }
-.dragon-header { text-align: center; margin-bottom: 22px; }
-.dragon-header .eyebrow {
-  font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 5px;
-  color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
-}
-.dragon-header h1 {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(1.6rem, 5vw, 2.6rem); font-weight: 900; color: #fff;
-  text-shadow: 0 0 30px rgba(232,156,31,0.7), 0 0 60px rgba(232,156,31,0.2);
-  letter-spacing: 2px; margin-bottom: 6px;
-}
-.dragon-header .subtitle {
-  font-family: 'Cinzel', serif; font-size: 0.72rem;
-  color: var(--text-dim); letter-spacing: 2px;
-}
-.mastery-badge {
-  display: flex; align-items: center; justify-content: center;
-  gap: 12px; margin-bottom: 24px;
-}
-.mastery-badge .count {
-  font-family: 'Cinzel', serif; font-size: 0.62rem;
-  letter-spacing: 2px; color: var(--text-muted); white-space: nowrap;
-}
-.mastery-bar-bg {
-  flex: 1; max-width: 220px; height: 3px;
-  background: rgba(232,156,31,0.1); border-radius: 2px; overflow: hidden;
-}
-.mastery-bar-fill {
-  height: 100%; background: linear-gradient(to right, var(--accent), #f0c878);
-  border-radius: 2px; box-shadow: 0 0 6px rgba(232,156,31,0.5);
-  transition: width 0.5s ease;
-}
-.statblock {
-  background: var(--panel-bg); border: 1px solid var(--panel-border);
-  border-radius: 4px; overflow: hidden;
-  box-shadow: 0 0 40px rgba(232,156,31,0.06), 0 8px 40px rgba(0,0,0,0.5);
-}
-.statblock::before, .statblock::after {
-  content: ''; display: block; height: 5px;
-  background: linear-gradient(to right, transparent, rgba(232,156,31,0.7), rgba(232,156,31,0.4), rgba(232,156,31,0.7), transparent);
-  opacity: 0.6;
-}
-.sb-inner { padding: 20px 26px; }
-.sb-name {
-  font-family: 'Cinzel Decorative', serif; font-size: 1.25rem; font-weight: 700;
-  color: var(--accent); text-shadow: 0 0 14px rgba(232,156,31,0.35); margin-bottom: 2px;
-}
-.sb-type { font-size: 0.9rem; font-style: italic; color: var(--text-dim); margin-bottom: 12px; }
-.sb-divider {
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--divider), transparent);
-  margin: 13px 0;
-}
-.sb-divider-thin { height: 1px; background: rgba(232,156,31,0.07); margin: 9px 0; }
-.sb-basics p { font-size: 0.9rem; line-height: 1.75; }
-.sb-basics p strong {
-  font-family: 'Cinzel', serif; font-size: 0.72rem;
-  letter-spacing: 1px; color: var(--accent);
-}
-.sb-scores {
-  display: grid; grid-template-columns: repeat(6, 1fr);
-  text-align: center; gap: 4px; margin: 14px 0;
-}
-.sb-score-cell { padding: 6px 2px; }
-.sb-score-label {
-  font-family: 'Cinzel', serif; font-size: 0.62rem;
-  letter-spacing: 2px; color: var(--accent); margin-bottom: 4px;
-}
-.sb-score-val {
-  font-family: 'Cinzel Decorative', serif; font-size: 1rem;
-  font-weight: 700; color: #fff;
-}
-.sb-score-mod { font-size: 0.78rem; color: var(--text-dim); }
-.sb-prop { font-size: 0.88rem; line-height: 1.7; }
-.sb-prop strong {
-  font-family: 'Cinzel', serif; font-size: 0.72rem;
-  letter-spacing: 1px; color: var(--accent);
-}
-.sb-section-title {
-  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 3px;
-  text-transform: uppercase; color: var(--accent);
-  border-bottom: 1px solid rgba(232,156,31,0.2);
-  padding-bottom: 6px; margin-bottom: 12px; margin-top: 14px;
-}
-.sb-ability { margin-bottom: 10px; }
-.sb-ability-name {
-  font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 600;
-  font-style: italic; color: var(--text);
-}
-.sb-ability-name .tag {
-  font-style: normal; font-size: 0.7rem;
-  color: var(--text-dim); margin-left: 2px;
-}
-.sb-ability p { font-size: 0.87rem; line-height: 1.55; color: #c0a070; margin-top: 3px; }
-.sb-ability p b { color: var(--text); }
-.sb-locked-hint {
-  font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 2px;
-  color: var(--text-muted); text-align: center; margin-top: 16px; opacity: 0.6;
-}
-@media (max-width: 500px) {
-  .sb-score-label { font-size: 0.58rem; letter-spacing: 1px; }
-  .sb-score-val { font-size: 0.9rem; }
-  .sb-name { font-size: 1.05rem; }
-  .page-nav { flex-wrap: wrap; justify-content: center; }
-}
-@media (hover: none) { .nav-btn:active { color: var(--accent); } }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="codex.css">
 </head>
-<body>
+<body data-dragon="telluric" data-page="statblock">
 
-<div class="particles" id="particles"></div>
+<main class="shell">
 
-<div class="wrapper">
-  <nav class="page-nav">
-    <a href="index.html" class="nav-btn">← Wyrmling Codex</a>
-    <a href="Telluric_Skill_Tree.html" class="nav-btn">Skill Tree →</a>
+  <nav class="topnav">
+    <a href="index.html" class="btn btn--ghost"><span class="arrow" style="transform:rotate(180deg)">→</span> Codex</a>
+    <a href="Telluric_Skill_Tree.html" class="btn btn--ghost">Skill Tree <span class="arrow">→</span></a>
   </nav>
 
-  <div class="dragon-header">
-    <div class="eyebrow" id="stageEyebrow">⛰️ Earthborn Wyrmling</div>
+  <header class="plate-head reveal r1">
+    <span class="sigil" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M6 37 L24 9 L42 37"/>
+        <path d="M15 37 L24 23 L33 37"/>
+        <line x1="4" y1="42" x2="44" y2="42" opacity=".5"/>
+        <line x1="10" y1="37" x2="38" y2="37" opacity=".3"/>
+      </svg>
+    </span>
+    <div class="binom">Draco telluricus</div>
     <h1>Telluric Dragon</h1>
-    <div class="subtitle">Stat Block — Current Form</div>
-  </div>
+    <div class="stage-line" id="stageLine">⛰️ Telluric Wyrmling</div>
+  </header>
 
-  <div class="mastery-badge">
+  <div class="plate-mastery reveal r2">
     <span class="count" id="masteryCount">0 / 21 Mastery</span>
-    <div class="mastery-bar-bg"><div class="mastery-bar-fill" id="masteryFill" style="width:0%"></div></div>
+    <div class="spec-track"><div class="spec-track-fill" id="masteryFill"></div></div>
   </div>
 
-  <div class="statblock">
-    <div class="sb-inner" id="sbInner"></div>
-  </div>
+  <article class="plate reveal r2">
+    <div class="plate-rule"></div>
+    <div class="plate-inner" id="sbInner"></div>
+    <div class="plate-rule"></div>
+  </article>
 
-  <div class="sb-locked-hint">Sblocca le mastery nella Skill Tree per potenziare il drago</div>
-</div>
+  <p class="sb-locked-hint reveal r3">Unlock mastery in the Skill Tree to empower the dragon</p>
+
+</main>
 
 <script>
 const SAVE_KEY = 'dragon_telluric';
@@ -204,9 +59,7 @@ const STAGES = [
   { name: 'Young',   size: 'Medium', hpMult: 30, eyebrow: '⛰️ Telluric Young'    },
   { name: 'Adult',   size: 'Large',  hpMult: 40, eyebrow: '⛰️ Telluric Adult'    },
 ];
-function getStageIdx(n) {
-  if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0;
-}
+function getStageIdx(n) { if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0; }
 
 const STAT_BONUSES = {
   p1s1: { stat: 'CON', bonus: 1 }, p1s2: { stat: 'CON', bonus: 1 }, p1s3: { stat: 'CON', bonus: 2 },
@@ -218,16 +71,13 @@ function getUnlocked() {
   try { const s = localStorage.getItem(SAVE_KEY); return new Set(s ? JSON.parse(s) : []); }
   catch(e) { return new Set(); }
 }
-
 function mod(v) { return Math.floor((v - 10) / 2); }
 function modStr(v) { const m = mod(v); return (m >= 0 ? '+' : '') + m; }
 function signed(n) { return (n >= 0 ? '+' : '') + n; }
 
 function computeStats(unlocked) {
   const stats = { ...BASE };
-  for (const [id, nb] of Object.entries(STAT_BONUSES)) {
-    if (unlocked.has(id)) stats[nb.stat] += nb.bonus;
-  }
+  for (const [id, nb] of Object.entries(STAT_BONUSES)) if (unlocked.has(id)) stats[nb.stat] += nb.bonus;
   return stats;
 }
 
@@ -239,71 +89,53 @@ function render() {
   document.getElementById('masteryCount').textContent = count + ' / ' + TOTAL + ' Mastery';
   document.getElementById('masteryFill').style.width = (count / TOTAL * 100) + '%';
 
-  const conMod = mod(stats.CON), dexMod = mod(stats.DEX);
-  const strMod = mod(stats.STR), wisMod = mod(stats.WIS);
-
+  const conMod = mod(stats.CON), dexMod = mod(stats.DEX), strMod = mod(stats.STR), wisMod = mod(stats.WIS);
   const stageIdx = getStageIdx(count);
   const stage = STAGES[stageIdx];
   const hp = conMod * stage.hpMult + 11 * 2;
-
-  document.getElementById('stageEyebrow').textContent = stage.eyebrow;
+  document.getElementById('stageLine').textContent = stage.eyebrow;
 
   const breathDC = 8 + PROF + conMod;
   const tailDC = 8 + PROF + strMod;
 
   let ac = 13 + dexMod;
-  let acFormula = `13 + DEX ${signed(dexMod)}`;
-  if (unlocked.has('p3n1')) { ac += 1; acFormula += ' +1'; }
-  if (unlocked.has('p3cap')) { ac += 2; acFormula += ' +2'; }
+  if (unlocked.has('p3n1')) ac += 1;
+  if (unlocked.has('p3cap')) ac += 2;
 
-  // Breath weapon
   let breathRecharge = '1/Short Rest';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
 
-  // Speed
-  let speeds = '20 ft., burrow 40 ft.';
-
+  const speeds = '20 ft., burrow 40 ft.';
   const biteHit = signed(strMod + PROF);
-  const biteDmg = '1d8' + (strMod >= 0 ? '+' : '') + strMod + ' piercing';
 
-  // Resistances
   const resistances = ['bludgeoning'];
   if (unlocked.has('p3n1')) { resistances.length = 0; resistances.push('bludgeoning, piercing, and slashing'); }
-
-  // ── Build HTML ────────────────────────────────────────────────────────────
 
   let html = `
     <div class="sb-name">Telluric Dragon ${stage.name}</div>
     <div class="sb-type"><em>${stage.size} Dragon</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
-      <p><strong>Armor Class</strong> ${ac} (13 + DEX mod.)</p>
-      <p><strong>Hit Points</strong> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
-      <p><strong>Speed</strong> ${speeds}</p>
+      <p><span class="sb-label">Armor Class</span> ${ac} (13 + DEX mod.)</p>
+      <p><span class="sb-label">Hit Points</span> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
+      <p><span class="sb-label">Speed</span> ${speeds}</p>
     </div>
     <div class="sb-divider"></div>
     <div class="sb-scores">`;
 
   for (const k of ['STR','DEX','CON','INT','WIS','CHA']) {
-    html += `<div class="sb-score-cell">
-      <div class="sb-score-label">${k}</div>
-      <div class="sb-score-val">${stats[k]}</div>
-      <div class="sb-score-mod">${modStr(stats[k])}</div>
-    </div>`;
+    html += `<div class="sb-score-cell"><div class="sb-score-k">${k}</div><div class="sb-score-v">${stats[k]}</div><div class="sb-score-m">${modStr(stats[k])}</div></div>`;
   }
-
   html += `</div><div class="sb-divider"></div>`;
-  html += `<p class="sb-prop"><strong>Saving Throws</strong> Str ${signed(strMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
-  html += `<p class="sb-prop"><strong>Skills</strong> Perception ${signed(wisMod + PROF)}, Athletics ${signed(strMod + PROF)}</p>`;
-  if (resistances.length) html += `<p class="sb-prop"><strong>Damage Resistances</strong> ${resistances.join('; ')}</p>`;
-  let senses = 'Darkvision 30 ft.';
-  html += `<p class="sb-prop"><strong>Senses</strong> ${senses}, Passive Perception ${10 + wisMod + PROF}</p>`;
-  html += `<p class="sb-prop"><strong>Languages</strong> Draconic</p>`;
-  html += `<p class="sb-prop"><strong>Proficiency Bonus</strong> +${PROF}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Saving Throws</span> Str ${signed(strMod + PROF)}, Con ${signed(conMod + PROF)}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Skills</span> Perception ${signed(wisMod + PROF)}, Athletics ${signed(strMod + PROF)}</p>`;
+  if (resistances.length) html += `<p class="sb-prop"><span class="sb-label">Damage Resistances</span> ${resistances.join('; ')}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Senses</span> Darkvision 30 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Languages</span> Draconic</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Proficiency Bonus</span> +${PROF}</p>`;
   html += `<div class="sb-divider"></div>`;
 
-  // ── Traits ────────────────────────────────────────────────────────────────
-
+  // Traits
   html += `<div class="sb-ability"><span class="sb-ability-name">Stone Bulwark.</span>
     <p>The dragon has <b>resistance to bludgeoning damage</b>, has <b>advantage</b> on saving throws and ability checks against effects that would move it against its will, and the area within <b>5 ft.</b> of the dragon is considered <b>difficult terrain</b> for hostile creatures.</p></div>`;
 
@@ -312,118 +144,89 @@ function render() {
     let shText = `At the start of each of its turns, the dragon regains <b>${regen} HP</b> as living stone seals its wounds.`;
     if (stageIdx >= 2) shText += ` The dragon is <b>immune to the petrified and charmed conditions</b>.`;
     if (stageIdx >= 3) shText += ` Once per long rest, when reduced to 0 HP, the dragon instead drops to <b>1 HP</b> — a shell of indestructible stone briefly encases its vital organs, shattering harmlessly at the start of its next turn.`;
-    html += `<div class="sb-ability"><span class="sb-ability-name">Stone Heart <span class="tag">(${stage.name}).</span></span>
-      <p>${shText}</p></div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Stone Heart <span class="tag">(${stage.name}).</span></span><p>${shText}</p></div>`;
   }
 
-  if (unlocked.has('p3n1')) {
-    html += `<div class="sb-ability"><span class="sb-ability-name">Crystal Scales.</span>
-      <p>Gemstones protrude from the dragon's hide. It gains <b>resistance to bludgeoning, piercing, and slashing damage</b>, and its AC increases by <b>+1</b> (already applied above).</p></div>`;
-  }
+  if (unlocked.has('p3n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Crystal Scales.</span>
+    <p>Gemstones protrude from the dragon's hide. It gains <b>resistance to bludgeoning, piercing, and slashing damage</b>, and its AC increases by <b>+1</b> (already applied above).</p></div>`;
 
-  if (unlocked.has('p3n2')) {
-    html += `<div class="sb-ability"><span class="sb-ability-name">Refractive Hide.</span>
-      <p>The dragon has <b>advantage</b> on saving throws against spells and magical effects. The first spell that targets it each round has a <b>25% chance</b> to be reflected back at the caster (roll 1d4; on a 1, the spell is redirected).</p></div>`;
-  }
+  if (unlocked.has('p3n2')) html += `<div class="sb-ability"><span class="sb-ability-name">Refractive Hide.</span>
+    <p>The dragon has <b>advantage</b> on saving throws against spells and magical effects. The first spell that targets it each round has a <b>25% chance</b> to be reflected back at the caster (roll 1d4; on a 1, the spell is redirected).</p></div>`;
 
-  if (unlocked.has('p2n3')) {
-    html += `<div class="sb-ability"><span class="sb-ability-name">Subterranean Ambush.</span>
-      <p>When the dragon emerges from a burrow within <b>10 ft. of a creature</b>, that creature must make a <b>DEX save (DC ${tailDC})</b> or take <b>4d6 bludgeoning damage</b> and be knocked <b>prone</b>. The dragon also has <b>advantage</b> on its first attack roll this turn.</p></div>`;
-  }
+  if (unlocked.has('p2n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Subterranean Ambush.</span>
+    <p>When the dragon emerges from a burrow within <b>10 ft. of a creature</b>, that creature must make a <b>DEX save (DC ${tailDC})</b> or take <b>4d6 bludgeoning damage</b> and be knocked <b>prone</b>. The dragon also has <b>advantage</b> on its first attack roll this turn.</p></div>`;
 
-  if (unlocked.has('p3cap')) {
-    html += `<div class="sb-ability"><span class="sb-ability-name">Adamant Carapace.</span>
-      <p>The dragon's AC increases by an additional <b>+2</b>. The dragon is <b>immune to critical hits</b>. All damage the dragon deals to <b>structures</b> is maximized. The dragon takes <b>5 less damage</b> from all sources.</p></div>`;
-  }
+  if (unlocked.has('p3cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Adamant Carapace.</span>
+    <p>The dragon's AC increases by an additional <b>+2</b>. The dragon is <b>immune to critical hits</b>. All damage the dragon deals to <b>structures</b> is maximized. The dragon takes <b>5 less damage</b> from all sources.</p></div>`;
 
-  html += `<div class="sb-divider"></div>`;
+  html += `<div class="sb-divider"></div><div class="sb-section-title">Actions</div>`;
 
-  // ── Actions ───────────────────────────────────────────────────────────────
-  html += `<div class="sb-section-title">Actions</div>`;
+  if (unlocked.has('p2n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span>
+    <p>The dragon makes <b>two Rolling Charge attacks</b>, or <b>one Rolling Charge and one Bone Mace Tail</b> attack.</p></div>`;
 
-  if (unlocked.has('p2n1')) {
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Multiattack.</span>
-      <p>The dragon makes <b>two Rolling Charge attacks</b>, or <b>one Rolling Charge and one Bone Mace Tail</b> attack.</p>
-    </div>`;
-  }
-
-  html += `<div class="sb-ability">
-    <span class="sb-ability-name">Rolling Charge. <span class="tag">Melee Weapon Attack:</span></span>
-    <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${strMod} bludgeoning. If the target is <b>Medium or smaller</b>, it is pushed <b>10 ft.</b> away from the dragon and knocked <b>prone</b>.</p>
-  </div>`;
+  html += `<div class="sb-ability"><span class="sb-ability-name">Rolling Charge. <span class="tag">Melee Weapon Attack:</span></span>
+    <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${strMod} bludgeoning. If the target is <b>Medium or smaller</b>, it is pushed <b>10 ft.</b> away from the dragon and knocked <b>prone</b>.</p></div>`;
 
   if (unlocked.has('p2n2') && !unlocked.has('p2cap')) {
     const tailDmg = '2d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Bone Mace Tail. <span class="tag">Melee Weapon Attack:</span></span>
-      <p>${biteHit} to hit, reach 10 ft., one target. <b>Hit:</b> ${tailDmg}. The target must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn (can move or take an action, not both; no reactions).</p>
-    </div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Bone Mace Tail. <span class="tag">Melee Weapon Attack:</span></span>
+      <p>${biteHit} to hit, reach 10 ft., one target. <b>Hit:</b> ${tailDmg}. The target must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn (can move or take an action, not both; no reactions).</p></div>`;
   }
 
   if (unlocked.has('p2cap')) {
     const tailDmg = '4d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Earthshaker Strike.</span>
-      <p>The dragon's tail crashes down in a <b>15 ft. cone behind it</b>. Each creature in the area must make a <b>STR save (DC ${tailDC})</b>. On a failure: <b>${tailDmg}</b>, <b>dazed</b> until end of next turn, and knocked <b>prone</b>. On a success, half damage only.</p>
-    </div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Earthshaker Strike.</span>
+      <p>The dragon's tail crashes down in a <b>15 ft. cone behind it</b>. Each creature in the area must make a <b>STR save (DC ${tailDC})</b>. On a failure: <b>${tailDmg}</b>, <b>dazed</b> until end of next turn, and knocked <b>prone</b>. On a success, half damage only.</p></div>`;
   }
 
-  // Dust Veil breath weapon
   let dustVeilArea = 'the dragon\'s occupied space';
   if (unlocked.has('p1n2')) dustVeilArea = 'a <b>15 ft. radius</b> around the dragon';
-
   let dustVeilExtras = '';
   if (unlocked.has('p1n1')) {
     dustVeilExtras += ` <b>Choking Grit.</b> Creatures that start their turn inside the veil must make a <b>CON save (DC ${breathDC})</b> or be <b>poisoned</b> until the start of their next turn.`;
     if (unlocked.has('p1n2')) dustVeilExtras += ` Creatures that fail this save are also <b>deafened</b> until the end of their next turn.`;
   }
-  if (unlocked.has('p1n3')) {
-    dustVeilExtras += ` <b>Abrasive Torrent.</b> Creatures that move through the veil take <b>2d6 slashing damage</b> per 5 ft. of movement inside it. Creatures that start their turn within the veil take <b>2d6 slashing</b> automatically. The veil's area is <b>difficult terrain</b>.`;
-  }
+  if (unlocked.has('p1n3')) dustVeilExtras += ` <b>Abrasive Torrent.</b> Creatures that move through the veil take <b>2d6 slashing damage</b> per 5 ft. of movement inside it. Creatures that start their turn within the veil take <b>2d6 slashing</b> automatically. The veil's area is <b>difficult terrain</b>.`;
 
-  html += `<div class="sb-ability">
-    <span class="sb-ability-name">Dust Veil <span class="tag">(${breathRecharge}, Concentration, 1 min).</span></span>
-    <p>The dragon exhales a roiling cloud of grit and stone-dust that fills ${dustVeilArea}, <b>heavily obscuring</b> vision within it. The cloud persists for up to 1 minute (concentration) and moves with the dragon.${dustVeilExtras}</p>
-  </div>`;
+  html += `<div class="sb-ability"><span class="sb-ability-name">Dust Veil <span class="tag">(${breathRecharge}, Concentration, 1 min).</span></span>
+    <p>The dragon exhales a roiling cloud of grit and stone-dust that fills ${dustVeilArea}, <b>heavily obscuring</b> vision within it. The cloud persists for up to 1 minute (concentration) and moves with the dragon.${dustVeilExtras}</p></div>`;
 
-  if (unlocked.has('p1cap')) {
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Petrifying Exhalation <span class="tag">(1/Long Rest).</span></span>
-      <p>The dragon releases a concentrated pulse of mineralizing dust from the Dust Veil. All creatures currently inside the veil must make a <b>CON save (DC ${breathDC})</b>. On a failure they are <b>restrained</b> as their joints begin to calcify (repeat the save at the end of each of their turns to end the effect). On a <b>natural 1</b> they are instead <b>petrified</b> for 1 hour. The Dust Veil dissipates immediately after this exhalation.</p>
-    </div>`;
-  }
+  if (unlocked.has('p1cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Petrifying Exhalation <span class="tag">(1/Long Rest).</span></span>
+    <p>The dragon releases a concentrated pulse of mineralizing dust from the Dust Veil. All creatures currently inside the veil must make a <b>CON save (DC ${breathDC})</b>. On a failure they are <b>restrained</b> as their joints begin to calcify (repeat the save at the end of each of their turns to end the effect). On a <b>natural 1</b> they are instead <b>petrified</b> for 1 hour. The Dust Veil dissipates immediately after this exhalation.</p></div>`;
 
-  // ── Reactions ─────────────────────────────────────────────────────────────
   if (unlocked.has('p3n3')) {
     html += `<div class="sb-section-title">Reactions</div>`;
-    html += `<div class="sb-ability">
-      <span class="sb-ability-name">Plate Shed.</span>
-      <p>When the dragon takes damage, it can shed its outer layer of stone plating, hurling the shards at the attacker. The attacker takes <b>${ac} bludgeoning damage</b>. The dragon's AC is then <b>reduced to 13</b> for 1 minute as the plates begin to regrow.</p>
-    </div>`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Plate Shed.</span>
+      <p>When the dragon takes damage, it can shed its outer layer of stone plating, hurling the shards at the attacker. The attacker takes <b>${ac} bludgeoning damage</b>. The dragon's AC is then <b>reduced to 13</b> for 1 minute as the plates begin to regrow.</p></div>`;
   }
-
-  html += `<div class="sb-divider-thin"></div>`;
 
   document.getElementById('sbInner').innerHTML = html;
 }
 
+// ── GITHUB AUTO-LOAD ─────────────────────────────────────────────────────────
+const GH_SAVE_PATH = 'saves/' + SAVE_KEY + '.json';
+function getGHConfig() {
+  return { owner: localStorage.getItem('gh_owner') || '', repo: localStorage.getItem('gh_repo') || '', token: localStorage.getItem('gh_token') || '' };
+}
+function ghConfigured() { const c = getGHConfig(); return !!(c.owner && c.repo && c.token); }
+async function loadFromGitHub() {
+  if (!ghConfigured()) return;
+  const { owner, repo, token } = getGHConfig();
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
+    if (!res.ok) return;
+    const data = await res.json();
+    const parsed = JSON.parse(atob(data.content.replace(/\s/g, '')));
+    localStorage.setItem(SAVE_KEY, JSON.stringify(parsed.unlocked || []));
+    render();
+  } catch(e) {}
+}
+
 render();
+loadFromGitHub();
 window.addEventListener('pageshow', e => { if (e.persisted) render(); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
-
-(function() {
-  const cont = document.getElementById('particles');
-  for (let i = 0; i < 35; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const s = Math.random() * 2 + 0.5;
-    const isCrystal = Math.random() < 0.25;
-    const color = isCrystal ? `rgba(52,211,153,${Math.random()*0.25+0.05})` : `rgba(232,156,31,${Math.random()*0.28+0.05})`;
-    p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${color};animation-duration:${Math.random()*22+10}s;animation-delay:${Math.random()*22}s;`;
-    cont.appendChild(p);
-  }
-})();
 </script>
 </body>
 </html>
