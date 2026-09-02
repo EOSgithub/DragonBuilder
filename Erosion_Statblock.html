@@ -63,6 +63,19 @@ const STAGES = [
   { name: 'Young',   size: 'Medium', hpMult: 20, eyebrow: '⏳ Erosion Young'    },
   { name: 'Adult',   size: 'Large',  hpMult: 25, eyebrow: '⏳ Erosion Adult'    },
 ];
+// Speed by stage — Tiny, Small, Medium, Large. Walk climbs by 5 a stage, the
+// dragon's own mode by 10, so growing larger is felt on the grid.
+const SPEED_BY_STAGE = [
+  { walk: 20, fly: 20 },
+  { walk: 25, fly: 30 },
+  { walk: 30, fly: 40 },
+  { walk: 35, fly: 50 },
+];
+function speedLine(idx) {
+  const s = SPEED_BY_STAGE[idx];
+  return s.walk + ' ft., fly ' + s.fly + ' ft.';
+}
+
 function getStageIdx(n) { if (n >= 20) return 3; if (n >= 10) return 2; if (n >= 5) return 1; return 0; }
 
 const STAT_BONUSES = {
@@ -133,7 +146,7 @@ function render() {
     <div class="sb-basics">
       <p><span class="sb-label">Armor Class</span> ${ac} (13 + DEX mod.)</p>
       <p><span class="sb-label">Hit Points</span> ${hp} (${stage.hpMult} × CON mod. + Level ${OATHSWORN_LEVEL} × 2)</p>
-      <p><span class="sb-label">Speed</span> 20 ft., fly 20 ft.</p>
+      <p><span class="sb-label">Speed</span> ${speedLine(stageIdx)}</p>
     </div>
     <div class="sb-divider"></div>
     <div class="sb-scores">`;
@@ -152,6 +165,15 @@ function render() {
   html += `<div class="sb-section-title">Passive Abilities</div>`;
   html += `<div class="sb-ability"><span class="sb-ability-name">Attrition.</span>
     <p>Each time the dragon damages a creature with a melee attack, it applies one <b>[Erosion]</b> stack to that creature.</p></div>`;
+
+  // Evolution passive — unlocks at Whelp and deepens with every size, the same
+  // shape as Void-Born and Stone Heart. Source of truth: Erosion_Skill_Tree.html
+  if (stageIdx >= 1) {
+    let wpText = `Concentration spells cast by creatures <b>within 15 ft.</b> of the dragon have their DC to maintain concentration <b>increased by 2</b>.`;
+    if (stageIdx >= 2) wpText += ` Magical buffs on creatures within 15 ft. have their <b>remaining duration reduced by 2d4 turns</b> at the start of each of the dragon's turns.`;
+    if (stageIdx >= 3) wpText += ` <b>Once/Short Rest — Action:</b> the dragon targets one ongoing magical effect of <b>5th level or lower</b> with a defined duration that it can see within 30 ft. — that effect immediately runs to its <b>temporal conclusion and ends</b>.`;
+    html += `<div class="sb-ability"><span class="sb-ability-name">Weathered Presence <span class="tag">(${stage.name}).</span></span><p>${wpText}</p></div>`;
+  }
 
   if (unlocked.has('p2n3')) html += `<div class="sb-ability"><span class="sb-ability-name">Rending Bite.</span>
     <p>On a hit with <b>Fault Line</b>, the dragon may strip <b>two</b> damage-type resistances instead of one. If the target has only one relevant resistance, the second choice applies the <b>CON disadvantage</b> fallback as normal.</p></div>`;
@@ -182,24 +204,52 @@ function render() {
   if (unlocked.has('p2cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Geological Memory <span class="tag">(1/Short Rest).</span></span>
     <p>The dragon makes a single <b>Fault Line</b> attack. On a hit, it deals normal damage plus <b>+2d8 per resistance stripped this combat</b>. The target must then succeed on a <b>DC 13 CON save</b> or every resistance stripped from it <b>remains stripped until it completes a long rest</b>.</p></div>`;
 
-  /* [Erosion] mechanic — read at the table by counting stacks, so the effects
-     are listed by threshold rather than buried in a paragraph. Thresholds are
-     cumulative: a creature at 4 stacks also suffers everything from 2+. */
+  /* [Erosion] mechanic — the table counts stacks on a creature and wants one
+     answer, so each row states the FULL state at that count: the accumulated
+     AC penalty and every effect in force. No adding up across rows. */
+  function erosionStateAt(n) {
+    const clauses = [];
+    const denied = [];
+    if (unlocked.has('p3n3')) {
+      if (n >= 2) denied.push('Disengage');
+      if (n >= 4) denied.push('Dodge');
+      if (n >= 6) denied.push('Dash');
+    }
+    if (denied.length) {
+      const named = denied.map(a => `<b>${a}</b>`);
+      const list = named.length > 1
+        ? named.slice(0, -1).join(', ') + ' or ' + named[named.length - 1]
+        : named[0];
+      clauses.push(`no ${list}`);
+    }
+    if (n >= 3) clauses.push(`<b>disadvantage on CON saves</b> in the Erosion Cloud`);
+    return { ac: Math.floor(n / 2), clauses };
+  }
+
+  // One row per count where the state changes; equal neighbours fold into a range.
   const stackTiers = [];
-  if (unlocked.has('p3cap')) stackTiers.push({ at: 'Any',
-    text: `The <b>AC penalty</b> applies to <b>saving throws</b> of the ability chosen for <b>Inevitable Decay</b> as well.` });
-  stackTiers.push({ at: 'Every 2',
-    text: `<b>−1 penalty to AC</b>, cumulative.` });
-  if (unlocked.has('p3n3')) stackTiers.push({ at: '2+',
-    text: `Cannot take the <b>Disengage</b> action.` });
-  stackTiers.push({ at: '3+',
-    text: `<b>Disadvantage on CON saving throws</b> while inside the <b>Erosion Cloud</b>.` });
-  if (unlocked.has('p3n2')) stackTiers.push({ at: '4+',
-    text: `<b>Speed reduced by 10 ft.</b>` });
-  if (unlocked.has('p3n3')) stackTiers.push({ at: '4+',
-    text: `Cannot take the <b>Dodge</b> action.` });
-  if (unlocked.has('p3n3')) stackTiers.push({ at: '6+',
-    text: `Cannot take the <b>Dash</b> action.` });
+  let runStart = 0, runKey = '', runText = '';
+  for (let n = 1; n <= maxStacks; n++) {
+    const { ac, clauses } = erosionStateAt(n);
+    const key = ac + '|' + clauses.join('|');
+    if (key !== runKey) {
+      if (runStart) stackTiers.push({ from: runStart, to: n - 1, text: runText });
+      runStart = n;
+      runKey = key;
+      runText = (ac > 0 ? `<b>−${ac} AC</b>` : '') +
+                (ac > 0 && clauses.length ? ' &amp; ' : '') + clauses.join(' &amp; ');
+    }
+  }
+  if (runStart) stackTiers.push({ from: runStart, to: maxStacks, text: runText });
+
+  // A count where nothing happens yet earns no row.
+  const tierRows = stackTiers
+    .filter(t => t.text)
+    .map(t => ({ at: t.from === t.to ? String(t.from) : `${t.from}–${t.to}`, text: t.text }));
+
+  const decayNote = unlocked.has('p3cap')
+    ? ` With <b>Inevitable Decay</b>, that AC penalty applies to <b>saving throws</b> of the chosen ability as well.`
+    : '';
 
   const removalRule = unlocked.has('p3n1')
     ? `Stacks no longer fall off on their own: at the end of its turn a creature removes <b>one stack</b> only on a successful <b>DC 13 CON save</b>.`
@@ -208,8 +258,8 @@ function render() {
   html += `<div class="sb-divider-thin"></div>`;
   html += `<div class="sb-mechanic">
     <div class="sb-mechanic-name">[Erosion]</div>
-    <p>A creature can hold at most <b>${maxStacks}</b> [Erosion] stacks. Effects are cumulative.</p>
-    <ul class="sb-tiers">${stackTiers.map(t =>
+    <p>A creature can hold at most <b>${maxStacks}</b> [Erosion] stacks. Each row is the full state at that count.${decayNote}</p>
+    <ul class="sb-tiers">${tierRows.map(t =>
       `<li><span class="tier-at">${t.at}</span><span class="tier-eff">${t.text}</span></li>`).join('')}</ul>
     <p class="sb-tiers-foot">${removalRule}</p></div>`;
 
