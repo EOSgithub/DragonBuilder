@@ -442,9 +442,71 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; color: var(--pa
 .save-bar { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 4px auto 10px; }
 .btn--save { color: var(--accent); border-color: var(--accent-line); background: var(--accent-tint); font-size: 0.74rem; padding: 0.85em 2.1em; }
 .btn--save:hover, .btn--save:focus-visible { background: var(--accent-glow); color: var(--paper); }
-.btn--save.is-dirty { border-color: var(--accent); animation: savePulse 2.2s var(--ease) infinite; }
+.btn--save[disabled] { opacity: 0.5; pointer-events: none; }
 @keyframes savePulse { 0%, 100% { box-shadow: 0 0 8px var(--accent-glow); } 50% { box-shadow: 0 0 20px var(--accent-glow); } }
 .save-bar .gh-status { margin-top: 0; }
+
+/* The unsaved-work bar. Anchored to the bottom because the tree is long and a
+   control at the foot of the page would never be seen mid-descent. */
+.savebar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  background: linear-gradient(180deg, rgba(19, 26, 29, 0.94), var(--panel));
+  border-top: 1px solid var(--accent-line);
+  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+  transform: translateY(calc(100% + 30px));
+  transition: transform 0.42s var(--ease);
+  pointer-events: none;
+}
+.savebar.is-open { transform: none; pointer-events: auto; }
+.savebar-inner {
+  max-width: var(--maxw); margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.savebar-count {
+  font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--accent);
+}
+.savebar-count.is-sync { color: var(--paper-dim); }
+.savebar-count.is-err  { color: #e0715a; letter-spacing: 0.08em; }
+.savebar-actions { display: flex; align-items: center; gap: 10px; }
+.savebar .btn--save { animation: savePulse 2.6s var(--ease) infinite; }
+.savebar-undo { font-size: 0.66rem; }
+.savebar-undo[disabled] { opacity: 0.4; pointer-events: none; }
+/* Keep the last stratum reachable while the bar covers the foot of the page. */
+body.has-savebar { padding-bottom: 84px; }
+
+/* ── Device pairing ───────────────────────────────────────────────────────── */
+.pair { margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.pair-qr { line-height: 0; }
+.pair-qr img, .pair-qr canvas {
+  border: 6px solid var(--paper); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+.pair-link { display: flex; gap: 8px; width: 100%; }
+.pair-link input {
+  flex: 1; min-width: 0;
+  background: var(--ink-2); border: 1px solid var(--line-strong); border-radius: 5px;
+  color: var(--paper-dim); font-family: var(--font-mono); font-size: 0.62rem;
+  padding: 9px 10px; outline: none;
+}
+.pair-warn { color: #e0b45a; font-style: normal; }
+
+/* One hand, one thumb: the action goes full width and the count sits above it. */
+@media (max-width: 620px) {
+  .savebar { padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
+  .savebar-inner { flex-direction: column; align-items: stretch; gap: 9px; }
+  .savebar-count { text-align: center; font-size: 0.58rem; }
+  .savebar-actions { justify-content: center; }
+  .savebar-actions .btn--save { flex: 1; }
+  body.has-savebar { padding-bottom: 128px; }
+  .pair-qr img, .pair-qr canvas { width: 168px; height: 168px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .savebar { transition: none; }
+  .savebar .btn--save { animation: none; }
+}
 
 @media (max-width: 760px) {
   .shafts { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }

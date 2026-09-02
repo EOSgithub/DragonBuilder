@@ -50,24 +50,31 @@
   <section class="shafts reveal r4" id="shafts" aria-label="Skill paths"></section>
 
   <div class="controls">
-    <div class="save-bar">
-      <button class="btn btn--save" id="ghSaveBtn">💾 Salva Modifiche</button>
-      <div class="gh-status" id="ghStatus"></div>
-    </div>
-
     <div class="control-row">
       <button class="btn btn--ghost" id="resetBtn">⟳ Reset Descent</button>
     </div>
-    <div class="save-indicator" id="saveIndicator">✓ Progress inscribed</div>
+    <div class="gh-status" id="ghStatus"></div>
 
     <details class="gh-panel" id="ghSettings">
       <summary>⚙ GitHub Sync</summary>
       <div class="gh-fields">
-        <p class="gh-hint">Enter credentials to store progress in a GitHub repository. The token is kept only in this browser.</p>
+        <p class="gh-hint">Credenziali per salvare i progressi nel repository. Il token resta solo in questo browser: conviene generarlo <b>fine-grained</b>, limitato a questo repo, con permesso Contents: Read &amp; Write.</p>
         <input id="ghOwner" placeholder="GitHub username or org" autocomplete="off" spellcheck="false" />
         <input id="ghRepo"  placeholder="Repository name" autocomplete="off" spellcheck="false" />
         <input id="ghToken" type="password" placeholder="Personal access token (Contents: Read & Write)" autocomplete="off" />
-        <button class="btn btn--ghost" id="ghSaveConfig">Save Config</button>
+        <button class="btn btn--ghost" id="ghSaveConfig">Salva configurazione</button>
+        <button class="btn btn--ghost" id="ghPairBtn">📱 Aggiungi dispositivo</button>
+      </div>
+
+      <div class="pair" id="ghPair" hidden>
+        <p class="gh-hint">Inquadra il QR dal secondo dispositivo, oppure aprigli il link.
+          <span class="pair-warn">Contiene il token</span>: mandalo solo a chi deve poter
+          modificare questo dragone.</p>
+        <div class="pair-qr" id="ghPairQR"></div>
+        <div class="pair-link">
+          <input id="ghPairLink" readonly aria-label="Link di configurazione" />
+          <button class="btn btn--ghost" id="ghPairCopy">Copia</button>
+        </div>
       </div>
     </details>
   </div>
@@ -79,6 +86,7 @@
   <p id="tooltipDesc"></p>
 </div>
 
+<script src="codex-sync.js"></script>
 <script>
 // ── DATA ─────────────────────────────────────────────────────────────────────
 const baseStats = { STR: 10, DEX: 16, CON: 14, INT: 8, WIS: 12, CHA: 10 };
@@ -164,21 +172,8 @@ const SAVE_KEY = 'dragon_villis';
 try { const s = localStorage.getItem(SAVE_KEY); if (s) JSON.parse(s).forEach(id => unlocked.add(id)); } catch(e) {}
 
 function saveState() {
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked]));
-    const ind = document.getElementById('saveIndicator');
-    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 2000); }
-  } catch(e) {}
-  markDirty();
-}
-
-let dirty = false;
-function markDirty() { dirty = true; updateSaveBtn(); }
-function updateSaveBtn() {
-  const b = document.getElementById('ghSaveBtn');
-  if (!b) return;
-  b.classList.toggle('is-dirty', dirty);
-  b.textContent = dirty ? '💾 Salva Modifiche •' : '💾 Salva Modifiche';
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked])); } catch(e) {}
+  Sync.markDirty();
 }
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -325,89 +320,22 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   unlocked.clear(); saveState(); updateStats(); rebuildUI();
 });
 
-// ── GITHUB SYNC ──────────────────────────────────────────────────────────────
-const GH_SAVE_PATH = 'saves/dragon_villis.json';
-function getGHConfig() {
-  return { owner: localStorage.getItem('gh_owner') || '', repo: localStorage.getItem('gh_repo') || '', token: localStorage.getItem('gh_token') || '' };
-}
-function ghConfigured() { const c = getGHConfig(); return !!(c.owner && c.repo && c.token); }
-function setGHStatus(type, msg) { const el = document.getElementById('ghStatus'); if (el) { el.textContent = msg; el.className = 'gh-status gh-' + type; } }
-
-async function loadFromGitHub() {
-  if (!ghConfigured()) return false;
-  const { owner, repo, token } = getGHConfig();
-  setGHStatus('sync', '↺ Loading from GitHub…');
-  try {
-    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`,
-      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
-    if (res.status === 404) { setGHStatus('ok', '● No remote save — using local data'); return false; }
-    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-    const data = await res.json();
-    const parsed = JSON.parse(atob(data.content.replace(/\s/g, '')));
-    unlocked.clear(); (parsed.unlocked || []).forEach(id => unlocked.add(id));
-    localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked]));
-    setGHStatus('ok', '✓ Synced with GitHub');
-    return true;
-  } catch(e) { setGHStatus('err', '✗ ' + e.message); return false; }
-}
-
-async function saveToGitHub() {
-  if (!ghConfigured()) return;
-  const { owner, repo, token } = getGHConfig();
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`;
-  const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
-  setGHStatus('sync', '↑ Saving to GitHub…');
-  try {
-    let sha;
-    const getRes = await fetch(apiUrl, { headers });
-    if (getRes.ok) sha = (await getRes.json()).sha;
-    else if (getRes.status !== 404) throw new Error(`GitHub API ${getRes.status}`);
-    const body = { message: 'Update dragon saves [skip ci]', content: btoa(JSON.stringify({ unlocked: [...unlocked] })) };
-    if (sha) body.sha = sha;
-    const putRes = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
-    if (!putRes.ok) throw new Error(`GitHub API ${putRes.status}`);
-    setGHStatus('ok', '✓ Saved to GitHub');
-    dirty = false; updateSaveBtn();
-    return true;
-  } catch(e) { setGHStatus('err', '✗ ' + e.message); return false; }
-}
-
-(function initGHForm() {
-  const c = getGHConfig();
-  if (c.owner) document.getElementById('ghOwner').value = c.owner;
-  if (c.repo)  document.getElementById('ghRepo').value  = c.repo;
-  if (c.token) document.getElementById('ghToken').value = c.token;
-  const parts = window.location.hostname.split('.');
-  if (parts[1] === 'github' && parts[2] === 'io') {
-    if (!c.owner) document.getElementById('ghOwner').value = parts[0];
-    const repoFromPath = window.location.pathname.split('/')[1];
-    if (!c.repo && repoFromPath) document.getElementById('ghRepo').value = repoFromPath;
-  }
-})();
-
-document.getElementById('ghSaveConfig').addEventListener('click', () => {
-  localStorage.setItem('gh_owner', document.getElementById('ghOwner').value.trim());
-  localStorage.setItem('gh_repo',  document.getElementById('ghRepo').value.trim());
-  localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
-  setGHStatus('ok', '✓ Configuration saved');
-});
-
-document.getElementById('ghSaveBtn').addEventListener('click', async () => {
-  if (!ghConfigured()) {
-    setGHStatus('err', '✗ Configura prima GitHub Sync qui sotto');
-    document.getElementById('ghSettings').open = true;
-    return;
-  }
-  await saveToGitHub();
-});
-
 // ── INIT ─────────────────────────────────────────────────────────────────────
 buildAbilities();
 updateStats();
 rebuildUI();
-updateSaveBtn();
-if (ghConfigured()) loadFromGitHub().then(loaded => { if (loaded) { updateStats(); rebuildUI(); } });
-window.addEventListener('beforeunload', (e) => { if (dirty && ghConfigured()) { e.preventDefault(); e.returnValue = ''; } });
+
+Sync.init({
+  dragon: document.body.dataset.dragon,
+  // Sorted, so the comparison against the last saved state is stable.
+  getState: () => [...unlocked].sort(),
+  setState: (ids) => {
+    unlocked.clear();
+    ids.forEach(id => unlocked.add(id));
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify([...unlocked])); } catch(e) {}
+  },
+  onApply: () => { updateStats(); rebuildUI(); }
+});
 </script>
 </body>
 </html>
