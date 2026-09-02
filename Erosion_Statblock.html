@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="codex.css">
+<script src="codex-sync.js"></script>
 <script src="codex.js"></script>
 </head>
 <body data-dragon="erosion" data-page="statblock">
@@ -181,48 +182,55 @@ function render() {
   if (unlocked.has('p2cap')) html += `<div class="sb-ability"><span class="sb-ability-name">Geological Memory <span class="tag">(1/Short Rest).</span></span>
     <p>The dragon makes a single <b>Fault Line</b> attack. On a hit, it deals normal damage plus <b>+2d8 per resistance stripped this combat</b>. The target must then succeed on a <b>DC 13 CON save</b> or every resistance stripped from it <b>remains stripped until it completes a long rest</b>.</p></div>`;
 
-  // [Erosion] mechanic — max stacks and removal rules scale with the Attrition path
-  let erosionRules = `A creature can have a maximum of <b>${maxStacks}</b> [Erosion] stacks. For every <b>2 stacks</b>, it suffers a <b>−1 penalty to AC</b>.`;
-  if (unlocked.has('p3n1')) {
-    erosionRules += ` Stacks no longer fall off automatically: at the end of its turn, a creature removes one stack only on a successful <b>DC 13 CON save</b>.`;
-  } else {
-    erosionRules += ` <b>One stack</b> is removed at the end of each of its turns.`;
-  }
-  if (unlocked.has('p3n2')) erosionRules += ` A creature with <b>4 or more</b> stacks has its <b>speed reduced by 10 ft.</b>`;
-  if (unlocked.has('p3n3')) erosionRules += ` A creature with <b>2+</b> stacks cannot take the <b>Disengage</b> action; at <b>4+</b> it also cannot <b>Dodge</b>; at <b>6+</b> it also cannot <b>Dash</b>.`;
+  /* [Erosion] mechanic — read at the table by counting stacks, so the effects
+     are listed by threshold rather than buried in a paragraph. Thresholds are
+     cumulative: a creature at 4 stacks also suffers everything from 2+. */
+  const stackTiers = [];
+  if (unlocked.has('p3cap')) stackTiers.push({ at: 'Any',
+    text: `The <b>AC penalty</b> applies to <b>saving throws</b> of the ability chosen for <b>Inevitable Decay</b> as well.` });
+  stackTiers.push({ at: 'Every 2',
+    text: `<b>−1 penalty to AC</b>, cumulative.` });
+  if (unlocked.has('p3n3')) stackTiers.push({ at: '2+',
+    text: `Cannot take the <b>Disengage</b> action.` });
+  stackTiers.push({ at: '3+',
+    text: `<b>Disadvantage on CON saving throws</b> while inside the <b>Erosion Cloud</b>.` });
+  if (unlocked.has('p3n2')) stackTiers.push({ at: '4+',
+    text: `<b>Speed reduced by 10 ft.</b>` });
+  if (unlocked.has('p3n3')) stackTiers.push({ at: '4+',
+    text: `Cannot take the <b>Dodge</b> action.` });
+  if (unlocked.has('p3n3')) stackTiers.push({ at: '6+',
+    text: `Cannot take the <b>Dash</b> action.` });
+
+  const removalRule = unlocked.has('p3n1')
+    ? `Stacks no longer fall off on their own: at the end of its turn a creature removes <b>one stack</b> only on a successful <b>DC 13 CON save</b>.`
+    : `<b>One stack</b> is removed at the end of each of its turns.`;
+
   html += `<div class="sb-divider-thin"></div>`;
   html += `<div class="sb-mechanic">
     <div class="sb-mechanic-name">[Erosion]</div>
-    <p>${erosionRules}</p></div>`;
+    <p>A creature can hold at most <b>${maxStacks}</b> [Erosion] stacks. Effects are cumulative.</p>
+    <ul class="sb-tiers">${stackTiers.map(t =>
+      `<li><span class="tier-at">${t.at}</span><span class="tier-eff">${t.text}</span></li>`).join('')}</ul>
+    <p class="sb-tiers-foot">${removalRule}</p></div>`;
 
   document.getElementById('sbInner').innerHTML = html;
   if (window.Codex) Codex.enhance();
 }
 
 // ── GITHUB AUTO-LOAD ─────────────────────────────────────────────────────────
-const GH_SAVE_PATH = 'saves/' + SAVE_KEY + '.json';
-function getGHConfig() {
-  return { owner: localStorage.getItem('gh_owner') || '', repo: localStorage.getItem('gh_repo') || '', token: localStorage.getItem('gh_token') || '' };
-}
-function ghConfigured() { const c = getGHConfig(); return !!(c.owner && c.repo && c.token); }
-async function loadFromGitHub() {
-  if (!ghConfigured()) return;
-  const { owner, repo, token } = getGHConfig();
-  try {
-    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`,
-      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
-    if (!res.ok) return;
-    const data = await res.json();
-    const parsed = JSON.parse(atob(data.content.replace(/\s/g, '')));
-    localStorage.setItem(SAVE_KEY, JSON.stringify(parsed.unlocked || []));
-    render();
-  } catch(e) {}
-}
+/* The shared layer owns the round-trip, so this page inherits the no-store read
+   that keeps a cached response from passing for a fresh one. */
+const DRAGON = document.body.dataset.dragon;
 
 render();
-loadFromGitHub();
+Sync.initReadOnly({ dragons: [DRAGON], onLoaded: render });
+
 window.addEventListener('pageshow', e => { if (e.persisted) render(); });
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  render();
+  if (Sync.configured()) Sync.fetchAll([DRAGON]).then(render);
+});
 </script>
 </body>
 </html>

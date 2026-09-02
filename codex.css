@@ -556,6 +556,28 @@ body.has-savebar { padding-bottom: 84px; }
 .sb-mechanic p { font-size: 0.9rem; line-height: 1.6; color: var(--paper-dim); }
 .sb-mechanic p b { color: var(--paper-soft); }
 
+/* Stack thresholds — read by counting, so the number leads each row. */
+.sb-tiers { list-style: none; display: flex; flex-direction: column; gap: 7px; margin: 10px 0 0; }
+.sb-tiers li { display: flex; align-items: baseline; gap: 10px; }
+.sb-tiers .tier-at {
+  flex: 0 0 auto; min-width: 52px;
+  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent);
+  border: 1px solid var(--accent-line); border-radius: 3px;
+  padding: 2px 6px; text-align: center;
+}
+.sb-tiers .tier-eff { font-size: 0.88rem; line-height: 1.5; color: var(--paper-dim); }
+.sb-tiers .tier-eff b { color: var(--paper-soft); }
+.sb-tiers-foot {
+  margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--accent-line);
+  font-size: 0.85rem !important; font-style: italic;
+}
+
+/* Inside the condition sheet the same list sits on the panel ground. */
+.cond-body .sb-tiers { margin-top: 4px; }
+.cond-body .sb-tiers .tier-eff { color: var(--paper-soft); font-size: 0.92rem; }
+.cond-body .sb-tiers-foot { border-top-color: var(--line); color: var(--paper-dim) !important; }
+
 .plate-head { text-align: center; margin-bottom: 20px; }
 .plate-head .sigil { display: block; width: 44px; height: 44px; margin: 0 auto 12px; color: var(--accent); }
 .plate-head .sigil svg { width: 100%; height: 100%; }
@@ -622,34 +644,100 @@ body.has-savebar { padding-bottom: 84px; }
   border-bottom: 1px dotted var(--hl-cond-line);
 }
 
+/* A keyword we can explain earns a tap target and says so. Ones with no entry
+   stay marked but inert, so no tap is offered that leads nowhere. */
+.hl-cond.is-known {
+  cursor: pointer;
+  padding: 0.14em 0.34em;
+  margin: 0 -0.1em;
+  border-radius: 3px;
+  background: rgba(179, 148, 224, 0.10);
+  border-bottom: 1px solid var(--hl-cond-line);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background 0.25s var(--ease);
+}
+.hl-cond.is-known:hover, .hl-cond.is-known:focus-visible { background: rgba(179, 148, 224, 0.22); }
+
 /* The stat block wraps most of these in <b>; keep the token's own colour. */
 .sb-ability p b .hl, .sb-mechanic p b .hl, .sb-prop b .hl { color: inherit; }
 
-/* ── Quick-DC strip ───────────────────────────────────────────────────────── */
-.dc-strip {
-  display: flex; align-items: center; gap: 8px;
-  max-width: 680px; margin: 0 auto 16px;
-  padding: 10px 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
+/* ── Condition sheet ──────────────────────────────────────────────────────── */
+.cond-wrap { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; }
+.cond-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(6, 9, 10, 0.66);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  opacity: 0; transition: opacity 0.3s var(--ease);
+  touch-action: none;                 /* don't scroll the page behind the sheet */
+}
+.cond-wrap.is-open .cond-backdrop { opacity: 1; }
+
+.cond-sheet {
+  position: relative;
+  width: 100%; max-width: 560px;
+  max-height: 82vh;
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, var(--raised), var(--panel));
+  border: 1px solid var(--hl-cond-line);
+  border-bottom: none;
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 -18px 44px rgba(0, 0, 0, 0.6);
+  padding: 8px 20px calc(20px + env(safe-area-inset-bottom));
+  transform: translateY(101%);
+  transition: transform 0.34s var(--ease);
+}
+.cond-wrap.is-open .cond-sheet { transform: none; }
+
+.cond-grip { width: 38px; height: 4px; border-radius: 3px; background: var(--line-strong); margin: 2px auto 12px; }
+.cond-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.cond-title {
+  font-family: var(--font-display); font-size: 1.24rem; color: var(--hl-cond);
+  font-variant: small-caps; letter-spacing: 0.04em; line-height: 1.15;
+}
+.cond-body {
+  margin-top: 12px; overflow-y: auto; overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
-.dc-strip::-webkit-scrollbar { display: none; }
-.dc-strip-label {
-  font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.24em;
-  text-transform: uppercase; color: var(--muted); flex-shrink: 0; padding-right: 2px;
+.cond-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.cond-list li {
+  position: relative; padding-left: 18px;
+  font-family: var(--font-body); font-size: 0.95rem; line-height: 1.55; color: var(--paper-soft);
 }
-.dc-chip {
-  display: inline-flex; align-items: baseline; gap: 0.45em; flex-shrink: 0;
-  border: 1px solid var(--hl-dc-line); border-radius: 4px;
-  background: var(--hl-dc-tint);
-  padding: 5px 10px;
-  font-family: var(--font-mono);
-  white-space: nowrap;
+.cond-list li::before {
+  content: ''; position: absolute; left: 2px; top: 0.62em;
+  width: 5px; height: 5px; transform: rotate(45deg);
+  background: var(--hl-cond); opacity: 0.75;
 }
-.dc-chip b { color: var(--hl-dc); font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; }
-.dc-chip .dc-save { color: var(--hl-dc); font-size: 0.6rem; letter-spacing: 0.14em; opacity: 0.8; }
-.dc-chip .dc-src { color: var(--paper-dim); font-size: 0.6rem; letter-spacing: 0.06em; }
+.cond-body > p { font-family: var(--font-body); font-size: 0.95rem; line-height: 1.6; color: var(--paper-soft); }
+.cond-note {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);
+  font-style: italic; color: var(--paper-dim) !important; font-size: 0.88rem !important;
+}
+.cond-src {
+  margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 0.54rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* Roomier and centred once there is a pointer and a wider window. */
+@media (min-width: 621px) {
+  .cond-wrap { align-items: center; }
+  .cond-sheet {
+    max-width: 480px; border-radius: 8px; border-bottom: 1px solid var(--hl-cond-line);
+    padding: 18px 24px 22px;
+    transform: translateY(14px) scale(0.98);
+    opacity: 0;
+    transition: transform 0.28s var(--ease), opacity 0.28s var(--ease);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.62);
+  }
+  .cond-wrap.is-open .cond-sheet { transform: none; opacity: 1; }
+  .cond-grip { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cond-sheet, .cond-backdrop { transition: none; }
+}
 
 /* ── Rollable ability ─────────────────────────────────────────────────────── */
 .sb-ability, .sb-mechanic { position: relative; }
@@ -757,6 +845,26 @@ body.has-savebar { padding-bottom: 84px; }
 }
 .roll-row.is-fumble .roll-note { color: var(--muted); }
 
+/* The dice a critical added, so the doubling is legible and not just a bigger total. */
+.roll-die.is-extra { border-style: dashed; border-color: var(--hl-dmg-line); color: var(--hl-dmg); }
+
+/* A natural 1 misses: the damage stays readable but is plainly struck out. */
+.roll-row.is-miss { opacity: 0.42; }
+.roll-row.is-miss .roll-total { text-decoration: line-through; color: var(--muted); }
+.roll-row.is-miss .roll-die { border-style: dashed; }
+
+/* Outcome, stated once at the top where it is looked for first. */
+.roll-flag {
+  margin-left: 0.7em; padding: 2px 6px; border-radius: 3px;
+  font-size: 0.92em; letter-spacing: 0.14em;
+}
+.roll-flag.is-crit { color: var(--hl-dmg); border: 1px solid var(--hl-dmg-line); background: var(--hl-dmg-tint); }
+.roll-flag.is-miss { color: var(--muted); border: 1px solid var(--line-strong); }
+/* The flag must never be the thing that gets truncated — only the name is. */
+.roll-title { display: flex; align-items: center; min-width: 0; overflow: visible; }
+.roll-title-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.roll-flag { flex-shrink: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .roll.is-rolling { animation: none; }
   .sb-ability.is-rollable::after, .sb-mechanic.is-rollable::after { transition: none; }
@@ -796,7 +904,6 @@ body.has-savebar { padding-bottom: 84px; }
   .sb-ability p, .sb-mechanic p { font-size: 0.88rem; }
 
   .plate-mastery { gap: 10px; }
-  .dc-strip { padding-left: 2px; padding-right: 2px; }
 
   /* Full-bleed tap zone for rollable entries. */
   .sb-ability.is-rollable, .sb-mechanic.is-rollable {
@@ -833,7 +940,6 @@ body.has-savebar { padding-bottom: 84px; }
   .ability:nth-child(3) { border-right: 1px solid var(--line); }
   .ability:nth-child(2n) { border-right: none; }
   .ability:nth-child(n+3) { border-top: 1px solid var(--line); }
-  .dc-chip .dc-src { display: none; }
   .roll-row { grid-template-columns: 1fr auto; }
   .roll-k { grid-column: 1 / -1; margin-bottom: -4px; }
 }

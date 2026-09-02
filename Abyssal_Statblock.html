@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="codex.css">
+<script src="codex-sync.js"></script>
 <script src="codex.js"></script>
 </head>
 <body data-dragon="abyssal" data-page="statblock">
@@ -193,29 +194,19 @@ function render() {
 }
 
 // ── GITHUB AUTO-LOAD ─────────────────────────────────────────────────────────
-const GH_SAVE_PATH = 'saves/' + SAVE_KEY + '.json';
-function getGHConfig() {
-  return { owner: localStorage.getItem('gh_owner') || '', repo: localStorage.getItem('gh_repo') || '', token: localStorage.getItem('gh_token') || '' };
-}
-function ghConfigured() { const c = getGHConfig(); return !!(c.owner && c.repo && c.token); }
-async function loadFromGitHub() {
-  if (!ghConfigured()) return;
-  const { owner, repo, token } = getGHConfig();
-  try {
-    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${GH_SAVE_PATH}`,
-      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
-    if (!res.ok) return;
-    const data = await res.json();
-    const parsed = JSON.parse(atob(data.content.replace(/\s/g, '')));
-    localStorage.setItem(SAVE_KEY, JSON.stringify(parsed.unlocked || []));
-    render();
-  } catch(e) {}
-}
+/* The shared layer owns the round-trip, so this page inherits the no-store read
+   that keeps a cached response from passing for a fresh one. */
+const DRAGON = document.body.dataset.dragon;
 
 render();
-loadFromGitHub();
+Sync.initReadOnly({ dragons: [DRAGON], onLoaded: render });
+
 window.addEventListener('pageshow', e => { if (e.persisted) render(); });
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  render();
+  if (Sync.configured()) Sync.fetchAll([DRAGON]).then(render);
+});
 </script>
 </body>
 </html>

@@ -108,11 +108,36 @@
   </section>
 
   <footer class="colophon reveal r5">
-    <p>Progress is inscribed automatically in this browser.</p>
+    <p>Progress is inscribed in this browser and synced with GitHub.</p>
+    <div class="gh-status" id="ghStatus"></div>
+
+    <details class="gh-panel" id="ghSettings">
+      <summary>⚙ GitHub Sync</summary>
+      <div class="gh-fields">
+        <p class="gh-hint">Credenziali per salvare i progressi nel repository. Il token resta solo in questo browser: conviene generarlo <b>fine-grained</b>, limitato a questo repo, con permesso Contents: Read &amp; Write.</p>
+        <input id="ghOwner" placeholder="GitHub username or org" autocomplete="off" spellcheck="false" />
+        <input id="ghRepo"  placeholder="Repository name" autocomplete="off" spellcheck="false" />
+        <input id="ghToken" type="password" placeholder="Personal access token (Contents: Read &amp; Write)" autocomplete="off" />
+        <button class="btn btn--ghost" id="ghSaveConfig">Salva configurazione</button>
+        <button class="btn btn--ghost" id="ghPairBtn">📱 Aggiungi dispositivo</button>
+      </div>
+
+      <div class="pair" id="ghPair" hidden>
+        <p class="gh-hint">Inquadra il QR dal secondo dispositivo, oppure aprigli il link.
+          <span class="pair-warn">Contiene il token</span>: mandalo solo a chi deve poter
+          modificare questi dragoni.</p>
+        <div class="pair-qr" id="ghPairQR"></div>
+        <div class="pair-link">
+          <input id="ghPairLink" readonly aria-label="Link di configurazione" />
+          <button class="btn btn--ghost" id="ghPairCopy">Copia</button>
+        </div>
+      </div>
+    </details>
   </footer>
 
 </main>
 
+<script src="codex-sync.js"></script>
 <script>
 const TOTAL = 21;
 
@@ -141,8 +166,19 @@ function refreshAll() {
 // Defer to next frame so the fill transition plays as a "sounding".
 requestAnimationFrame(() => requestAnimationFrame(refreshAll));
 
+/* Opening the codex is the moment to find out what the group actually has:
+   read every dragon from GitHub, then re-sound the gauges. */
+Sync.initReadOnly({
+  dragons: ['abyssal', 'telluric', 'erosion'],
+  onLoaded: refreshAll
+});
+
 window.addEventListener('pageshow', e => { if (e.persisted) refreshAll(); });
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshAll(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  refreshAll();
+  if (Sync.configured()) Sync.fetchAll(['abyssal', 'telluric', 'erosion']).then(refreshAll);
+});
 </script>
 </body>
 </html>

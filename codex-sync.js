@@ -10,20 +10,22 @@
 (function (global) {
   'use strict';
 
-  /* Save file names predate the current dragon names (abyssal writes to
-     dragon_villis.json). The mapping is fixed and explicit — never derived
-     from the dragon slug — so existing saves keep resolving. */
-  var REMOTE = {
-    erosion:  'saves/dragon_erosion.json',
-    telluric: 'saves/dragon_telluric.json',
-    abyssal:  'saves/dragon_villis.json'
+  /* Save names predate the current dragon names (abyssal stores dragon_villis).
+     The mapping is fixed and explicit — never derived from the dragon slug —
+     so existing saves, local and remote, keep resolving. */
+  var SAVES = {
+    erosion:  'dragon_erosion',
+    telluric: 'dragon_telluric',
+    abyssal:  'dragon_villis'
   };
+  function savePath(dragon) { return SAVES[dragon] ? 'saves/' + SAVES[dragon] + '.json' : ''; }
 
   var API = 'https://api.github.com';
   var COMMIT_MSG = 'Update dragon saves [skip ci]';
   var QR_LIB = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
 
   var cfg = { getState: null, setState: null, onApply: null };
+  var dragon = '';        // erosion | telluric | abyssal
   var path = '';          // saves/dragon_x.json
   var baseline = '[]';    // last state known to match the remote file
   var sha = null;         // sha of the file we loaded, for conflict detection
@@ -51,9 +53,25 @@
       'Content-Type': 'application/json'
     };
   }
-  function contentsUrl() {
+  function contentsUrl(p) {
     var c = readCfg();
-    return API + '/repos/' + c.owner + '/' + c.repo + '/contents/' + path;
+    return API + '/repos/' + c.owner + '/' + c.repo + '/contents/' + (p || path);
+  }
+
+  /* One remote read, used by every page. `no-store` matters: a cached 200 would
+     silently defeat the whole point of re-reading on open. */
+  function fetchSave(which) {
+    var p = savePath(which);
+    if (!p || !configured()) return Promise.resolve(null);
+    return fetch(contentsUrl(p), { headers: headers(), cache: 'no-store' })
+      .then(function (res) {
+        if (res.status === 404) return { ids: null, sha: null, missing: true };
+        if (!res.ok) throw new Error('GitHub API ' + res.status);
+        return res.json().then(function (data) {
+          var parsed = JSON.parse(unb64Content(data.content));
+          return { ids: parsed.unlocked || [], sha: data.sha, missing: false };
+        });
+      });
   }
 
   // ── base64url, so a token survives a URL fragment intact ──────────────────
@@ -144,26 +162,43 @@
   function load(silent) {
     if (!configured()) return Promise.resolve(false);
     if (!silent) status('sync', '↺ Carico da GitHub…');
-    // no-store: a cached response would defeat the point of re-reading on focus.
-    return fetch(contentsUrl(), { headers: headers(), cache: 'no-store' })
-      .then(function (res) {
-        if (res.status === 404) {
+    return fetchSave(dragon)
+      .then(function (out) {
+        if (!out || out.missing) {
           if (!silent) status('ok', '● Nessun salvataggio remoto — uso i dati locali');
           sha = null;
           return false;
         }
-        if (!res.ok) throw new Error('GitHub API ' + res.status);
-        return res.json().then(function (data) {
-          var parsed = JSON.parse(unb64Content(data.content));
-          sha = data.sha;
-          cfg.setState(parsed.unlocked || []);
-          baseline = cur();
-          if (cfg.onApply) cfg.onApply();
-          if (!silent) status('ok', '✓ Sincronizzato con GitHub');
-          return true;
-        });
+        sha = out.sha;
+        cfg.setState(out.ids);
+        baseline = cur();
+        if (cfg.onApply) cfg.onApply();
+        if (!silent) status('ok', '✓ Sincronizzato con GitHub');
+        return true;
       })
       .catch(function (e) { status('err', '✗ ' + e.message); return false; });
+  }
+
+  /* Read every dragon at once and mirror it into localStorage, so a page that
+     only displays saves (the codex index, a stat block) shows what the group
+     last wrote rather than what this device happens to remember. */
+  function fetchAll(dragons) {
+    if (!configured()) return Promise.resolve({});
+    status('sync', '↺ Carico da GitHub…');
+    var out = {};
+    return Promise.all(dragons.map(function (d) {
+      return fetchSave(d)
+        .then(function (r) {
+          if (!r || r.missing || !r.ids) return;
+          out[d] = r.ids;
+          try { localStorage.setItem(SAVES[d], JSON.stringify(r.ids)); } catch (e) {}
+        })
+        .catch(function () { /* one dragon failing must not sink the others */ });
+    })).then(function () {
+      var n = Object.keys(out).length;
+      status(n ? 'ok' : 'err', n ? '✓ Sincronizzato con GitHub' : '✗ Nessun salvataggio caricato');
+      return out;
+    });
   }
 
   function payloadFor(stateJson) { return JSON.stringify({ unlocked: JSON.parse(stateJson) }); }
@@ -350,8 +385,9 @@
     cfg.getState = opts.getState;
     cfg.setState = opts.setState;
     cfg.onApply  = opts.onApply;
-    path = REMOTE[opts.dragon];
-    if (!path) { console.error('Codex Sync: unknown dragon "' + opts.dragon + '"'); return; }
+    dragon = opts.dragon;
+    path = savePath(dragon);
+    if (!path) { console.error('Codex Sync: unknown dragon "' + dragon + '"'); return; }
 
     buildBar();
     wirePanel();
@@ -380,11 +416,31 @@
     });
   }
 
+  /* For pages that only display saves — the codex index and the stat blocks.
+     No save bar, no dirty tracking, no writes: just the config panel and a
+     fresh read of the named dragons every time the page opens. */
+  function initReadOnly(opts) {
+    opts = opts || {};
+    var dragons = opts.dragons && opts.dragons.length ? opts.dragons : Object.keys(SAVES);
+
+    wirePanel();
+    consumePairLink();
+    fillFields();
+
+    if (!configured()) return Promise.resolve({});
+    return fetchAll(dragons).then(function (out) {
+      if (opts.onLoaded) opts.onLoaded(out);
+      return out;
+    });
+  }
+
   global.Sync = {
     init: init,
+    initReadOnly: initReadOnly,
     markDirty: markDirty,
     save: save,
     load: load,
+    fetchAll: fetchAll,
     isDirty: isDirty,
     configured: configured
   };
