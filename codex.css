@@ -66,6 +66,12 @@ body[data-dragon="erosion"] {
 /* ── Reset & base ─────────────────────────────────────────────────────────── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* An author `display` beats the user agent's `[hidden] { display: none }`, so a
+   panel like .cond-wrap or .pair — both `display: flex` — stays laid out while
+   marked hidden. A full-viewport one then swallows every tap on the page.
+   This makes the attribute mean what it says, everywhere. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -663,7 +669,14 @@ body.has-savebar { padding-bottom: 84px; }
 .sb-ability p b .hl, .sb-mechanic p b .hl, .sb-prop b .hl { color: inherit; }
 
 /* ── Condition sheet ──────────────────────────────────────────────────────── */
-.cond-wrap { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; }
+/* Pointer events are gated on .is-open, not on [hidden], so the sheet stops
+   intercepting taps the instant it starts leaving rather than when it lands. */
+.cond-wrap {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; align-items: flex-end; justify-content: center;
+  pointer-events: none;
+}
+.cond-wrap.is-open { pointer-events: auto; }
 .cond-backdrop {
   position: absolute; inset: 0;
   background: rgba(6, 9, 10, 0.66);
