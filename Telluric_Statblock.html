@@ -54,6 +54,8 @@ const TOTAL = 21;
 const BASE = { STR: 16, DEX: 10, CON: 14, INT: 10, WIS: 12, CHA: 8 };
 // Proficiency bonus by size/stage: Tiny 2, Small 3, Medium 3, Large 4, larger 5
 const PROF_BY_STAGE = [2, 3, 3, 4, 5];
+// HP tracks the bonded Oathsworn's character level. Final: 14.
+const OATHSWORN_LEVEL = 14;
 
 const STAGES = [
   { name: 'Wyrmling', size: 'Tiny',  hpMult: 10, eyebrow: '⛰️ Telluric Wyrmling' },
@@ -76,6 +78,9 @@ function getUnlocked() {
 function mod(v) { return Math.floor((v - 10) / 2); }
 function modStr(v) { const m = mod(v); return (m >= 0 ? '+' : '') + m; }
 function signed(n) { return (n >= 0 ? '+' : '') + n; }
+// Damage expression: the modifier is omitted entirely when it is 0, so we never
+// print "2d8+0". Kept ASCII-signed so codex.js can parse and roll it.
+function dmgStr(dice, m, type) { return dice + (m > 0 ? '+' + m : m < 0 ? '-' + Math.abs(m) : '') + ' ' + type; }
 
 function computeStats(unlocked) {
   const stats = { ...BASE };
@@ -95,15 +100,17 @@ function render() {
   const stageIdx = getStageIdx(count);
   const stage = STAGES[stageIdx];
   const PROF = PROF_BY_STAGE[stageIdx];
-  const hp = conMod * stage.hpMult + 13 * 2;
+  const hp = conMod * stage.hpMult + OATHSWORN_LEVEL * 2;
   document.getElementById('stageLine').textContent = stage.eyebrow;
 
   const breathDC = 8 + PROF + conMod; // Dust Veil path (p1 · CON)
   const tailDC = 8 + PROF + strMod;   // Burrowing/melee path (p2 · STR)
 
   let ac = 13 + dexMod;
-  if (unlocked.has('p3n1')) ac += 1;
-  if (unlocked.has('p3cap')) ac += 2;
+  const acBonuses = [];
+  if (unlocked.has('p3n1'))  { ac += 1; acBonuses.push('+1 Crystal Scales'); }
+  if (unlocked.has('p3cap')) { ac += 2; acBonuses.push('+2 Adamant Carapace'); }
+  const acNote = '13 + DEX mod.' + (acBonuses.length ? ', ' + acBonuses.join(', ') : '');
 
   let breathRecharge = '1/Short Rest';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
@@ -117,11 +124,11 @@ function render() {
 
   let html = `
     <div class="sb-name">Telluric Dragon ${stage.name}</div>
-    <div class="sb-type"><em>${stage.size} Dragon</em></div>
+    <div class="sb-type"><em>${stage.size} Dragon, Neutral</em></div>
     <div class="sb-divider"></div>
     <div class="sb-basics">
-      <p><span class="sb-label">Armor Class</span> ${ac} (13 + DEX mod.)</p>
-      <p><span class="sb-label">Hit Points</span> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
+      <p><span class="sb-label">Armor Class</span> ${ac} (${acNote})</p>
+      <p><span class="sb-label">Hit Points</span> ${hp} (${stage.hpMult} × CON mod. + Level ${OATHSWORN_LEVEL} × 2)</p>
       <p><span class="sb-label">Speed</span> ${speeds}</p>
     </div>
     <div class="sb-divider"></div>
@@ -136,7 +143,7 @@ function render() {
   if (resistances.length) html += `<p class="sb-prop"><span class="sb-label">Damage Resistances</span> ${resistances.join('; ')}</p>`;
   html += `<p class="sb-prop"><span class="sb-label">Senses</span> Darkvision 30 ft., Passive Perception ${10 + wisMod + PROF}</p>`;
   html += `<p class="sb-prop"><span class="sb-label">Languages</span> Draconic</p>`;
-  html += `<p class="sb-prop"><span class="sb-label">Proficiency Bonus</span> +${PROF}</p>`;
+  html += `<p class="sb-prop"><span class="sb-label">Challenge</span> — &nbsp;·&nbsp; <span class="sb-label">Proficiency Bonus</span> +${PROF}</p>`;
   html += `<div class="sb-divider"></div>`;
 
   // Traits
@@ -168,20 +175,27 @@ function render() {
 
   html += `<div class="sb-divider"></div><div class="sb-section-title">Actions</div>`;
 
+  // The tail attack is unlocked by p2n2 and renamed by the p2cap upgrade, so
+  // Multiattack must name whichever version is actually on the sheet — and offer
+  // no tail option at all while p2n1 is the only melee node taken.
+  const tailName = unlocked.has('p2cap') ? 'Earthshaker Strike' : 'Bone Mace Tail';
+  const hasTail = unlocked.has('p2n2');
   if (unlocked.has('p2n1')) html += `<div class="sb-ability"><span class="sb-ability-name">Multiattack.</span>
-    <p>The dragon makes <b>two Rolling Charge attacks</b>, or <b>one Rolling Charge and one Bone Mace Tail</b> attack.</p></div>`;
+    <p>The dragon makes <b>two Rolling Charge attacks</b>${hasTail ? `, or <b>one Rolling Charge and one ${tailName}</b> attack` : ''}.</p></div>`;
 
+  // Rolling Charge deals flat damage equal to the STR mod by design — no die.
+  // codex.js renders it as hl-flat: shown in the tally, never rolled.
   html += `<div class="sb-ability"><span class="sb-ability-name">Rolling Charge. <span class="tag">Melee Weapon Attack:</span></span>
     <p>${biteHit} to hit, reach 5 ft., one target. <b>Hit:</b> ${strMod} bludgeoning. If the target is <b>Medium or smaller</b>, it is pushed <b>10 ft.</b> away from the dragon and knocked <b>prone</b>.</p></div>`;
 
   if (unlocked.has('p2n2') && !unlocked.has('p2cap')) {
-    const tailDmg = '2d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
+    const tailDmg = dmgStr('2d8', strMod, 'bludgeoning');
     html += `<div class="sb-ability"><span class="sb-ability-name">Bone Mace Tail.</span>
       <p>The dragon swings its bone-and-stone tail at one creature within <b>10 ft.</b> The target takes <b>${tailDmg}</b> and must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn (can move or take an action, not both; no reactions).</p></div>`;
   }
 
   if (unlocked.has('p2cap')) {
-    const tailDmg = '4d8' + (strMod >= 0 ? '+' : '') + strMod + ' bludgeoning';
+    const tailDmg = dmgStr('4d8', strMod, 'bludgeoning');
     html += `<div class="sb-ability"><span class="sb-ability-name">Earthshaker Strike.</span>
       <p>The dragon's Bone Mace Tail crashes down, striking all creatures in a <b>10 ft. half circle behind it</b>. Each creature takes <b>${tailDmg}</b> and must succeed on a <b>STR save (DC ${tailDC})</b> or be <b>dazed</b> until the end of its next turn and knocked <b>prone</b>.</p></div>`;
   }

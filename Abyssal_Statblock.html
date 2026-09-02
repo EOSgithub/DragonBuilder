@@ -55,6 +55,8 @@ const TOTAL = 21;
 const BASE = { STR: 10, DEX: 16, CON: 14, INT: 8, WIS: 12, CHA: 10 };
 // Proficiency bonus by size/stage: Tiny 2, Small 3, Medium 3, Large 4, larger 5
 const PROF_BY_STAGE = [2, 3, 3, 4, 5];
+// HP tracks the bonded Oathsworn's character level. Final: 14.
+const OATHSWORN_LEVEL = 14;
 
 const STAGES = [
   { name: 'Wyrmling', size: 'Tiny',  hpMult: 10, eyebrow: '⚫ Abyssal Wyrmling', blindsight: '10 ft.'  },
@@ -77,6 +79,9 @@ function getUnlocked() {
 function mod(v) { return Math.floor((v - 10) / 2); }
 function modStr(v) { const m = mod(v); return (m >= 0 ? '+' : '') + m; }
 function signed(n) { return (n >= 0 ? '+' : '') + n; }
+// Damage expression: the modifier is omitted entirely when it is 0, so we never
+// print "2d6+0". Kept ASCII-signed so codex.js can parse and roll it.
+function dmgStr(dice, m, type) { return dice + (m > 0 ? '+' + m : m < 0 ? '-' + Math.abs(m) : '') + ' ' + type; }
 
 function computeStats(unlocked) {
   const stats = { ...BASE };
@@ -96,13 +101,14 @@ function render() {
   const stageIdx = getStageIdx(count);
   const stage = STAGES[stageIdx];
   const PROF = PROF_BY_STAGE[stageIdx];
-  const hp = conMod * stage.hpMult + 13 * 2;
+  const hp = conMod * stage.hpMult + OATHSWORN_LEVEL * 2;
   document.getElementById('stageLine').textContent = stage.eyebrow;
 
   const ac = 13 + dexMod;
   const breathDC = 8 + PROF + conMod; // Breath path (p1 · CON)
-  const auraDC   = 8 + PROF + chaMod; // Aura path (p3 · CHA)
-  const meleeDC  = 8 + PROF + dexMod; // Melee path (p2 · DEX)
+  // Charisma sets the DC for every mind-affecting effect — the Pressure Aura's
+  // fear and Luring Light's charm alike — as 2024 keys those to CHA.
+  const chaDC    = 8 + PROF + chaMod;
 
   let breathRecharge = '1/Short Rest', breathCone = '15 ft.', breathDmg = '3d10 cold';
   if (unlocked.has('p1n1')) breathRecharge = 'Recharge 6';
@@ -113,7 +119,7 @@ function render() {
   if (unlocked.has('p3n2'))  auraRange = '15 ft.';
   if (unlocked.has('p3cap')) auraRange = '20 ft.';
   const rendHit = signed(dexMod + PROF);
-  const rendDmg = '2d6' + (dexMod >= 0 ? '+' : '') + dexMod + ' slashing';
+  const rendDmg = dmgStr('2d6', dexMod, 'slashing');
 
   let html = `
     <div class="sb-name">Abyssal Dragon ${stage.name} — Villis</div>
@@ -121,7 +127,7 @@ function render() {
     <div class="sb-divider"></div>
     <div class="sb-basics">
       <p><span class="sb-label">Armor Class</span> ${ac} (13 + DEX mod.)</p>
-      <p><span class="sb-label">Hit Points</span> ${hp} (${stage.hpMult} × CON mod. + Level × 2)</p>
+      <p><span class="sb-label">Hit Points</span> ${hp} (${stage.hpMult} × CON mod. + Level ${OATHSWORN_LEVEL} × 2)</p>
       <p><span class="sb-label">Speed</span> 20 ft., swim 40 ft.</p>
     </div>
     <div class="sb-divider"></div>
@@ -144,7 +150,7 @@ function render() {
 
   // Traits
   let auraEffects = ['The area within the aura is considered <b>difficult terrain</b> for hostile creatures.'];
-  if (unlocked.has('p3n1')) auraEffects.push(`<b>Deep Terror.</b> Hostile creatures that start their turn within the aura — or that enter it — must succeed on a <b>WIS save (DC ${auraDC})</b> or be <b>frightened</b> of the dragon until the end of that turn.`);
+  if (unlocked.has('p3n1')) auraEffects.push(`<b>Deep Terror.</b> Hostile creatures that start their turn within the aura — or that enter it — must succeed on a <b>WIS save (DC ${chaDC})</b> or be <b>frightened</b> of the dragon until the end of that turn.`);
   if (unlocked.has('p3n2')) auraEffects.push('<b>Crushing Pressure.</b> Creatures that start their turn within the aura have their <b>speed halved</b> until the end of their turn.');
   if (unlocked.has('p3cap')) auraEffects.push('<b>Abyssal Incarnation.</b> Creatures that start their turn in the aura take <b>2d8 force damage</b>, increasing by an additional 2d8 for each consecutive round they remain within it.');
   html += `<div class="sb-ability"><span class="sb-ability-name">Pressure Aura.</span>
@@ -152,7 +158,7 @@ function render() {
 
   if (stageIdx >= 1) {
     const coldDice = ['', '1d6', '2d6', '4d6'][stageIdx];
-    let vbText = `The dragon's senses pierce the deep dark. Its blindsight extends to <b>${stage.blindsight}</b>. It is <b>immune to the frightened condition</b>. Creatures that hit it with a melee attack take <b>${coldDice} cold damage</b> from the void chill radiating off its scales.`;
+    let vbText = `The dragon's senses pierce the deep dark. Its blindsight extends to <b>${stage.blindsight}</b> It is <b>immune to the frightened condition</b>. Creatures that hit it with a melee attack take <b>${coldDice} cold damage</b> from the void chill radiating off its scales.`;
     if (stageIdx >= 2) vbText += ` The dragon is also <b>immune to the charmed condition</b> and can breathe water freely.`;
     if (stageIdx >= 3) vbText += ` The dragon is <b>immune to psychic damage</b>, can see through magical darkness, and its cold damage <b>ignores resistance</b>.`;
     html += `<div class="sb-ability"><span class="sb-ability-name">Void-Born <span class="tag">(${stage.name}).</span></span><p>${vbText}</p></div>`;
@@ -171,7 +177,7 @@ function render() {
 
   if (unlocked.has('p2n2')) {
     html += `<div class="sb-ability"><span class="sb-ability-name">Luring Light.</span>
-      <p>A glowing light draws prey in. A creature within <b>30 ft.</b> must succeed on a <b>WIS save (DC ${meleeDC})</b> or be <b>charmed</b> and use its reaction to move toward the dragon. If it ends this movement within <b>5 ft.</b> of the dragon, the dragon can make one free <b>Rend</b> attack against it.</p></div>`;
+      <p>A glowing light draws prey in. A creature within <b>30 ft.</b> must succeed on a <b>WIS save (DC ${chaDC})</b> or be <b>charmed</b> and use its reaction to move toward the dragon. If it ends this movement within <b>5 ft.</b> of the dragon, the dragon can make one free <b>Rend</b> attack against it.</p></div>`;
   }
 
   let breathExtra = ' A creature that fails also <b>cannot speak</b> until the end of its next turn, as the cold steals the breath from its lungs.';
