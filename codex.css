@@ -31,6 +31,17 @@
 
   --gold:           #d9b26a;   /* capstone seal, shared */
 
+  /* Play-layer semantics — deliberately NOT tied to the dragon accent, so a
+     DC reads as a DC on every specimen. */
+  --hl-dc:          #d9b26a;   /* difficulty classes — gold */
+  --hl-dc-tint:     rgba(217, 178, 106, 0.13);
+  --hl-dc-line:     rgba(217, 178, 106, 0.38);
+  --hl-dmg:         #e8795f;   /* dice & damage — ember */
+  --hl-dmg-tint:    rgba(232, 121, 95, 0.13);
+  --hl-dmg-line:    rgba(232, 121, 95, 0.34);
+  --hl-cond:        #b394e0;   /* conditions — violet */
+  --hl-cond-line:   rgba(179, 148, 224, 0.45);
+
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-body:    'Spectral', Georgia, serif;
   --font-mono:    'Spline Sans Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -65,7 +76,10 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   position: relative;
+  /* `clip` contains the bleed without making <body> a scroll container, which
+     would stop the sticky mobile topnav from sticking. `hidden` is the fallback. */
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -489,3 +503,285 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 400; color: var(--pa
 .plate-mastery { display: flex; align-items: center; gap: 13px; justify-content: center; margin-bottom: 24px; }
 .plate-mastery .count { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .plate-mastery .spec-track { flex: 1; max-width: 240px; height: 3px; }
+
+/* ============================================================================
+   PLAY LAYER — semantic highlighting, quick DCs, tap-to-roll
+   Applied by codex.js to whatever the plate rendered. Nothing here changes
+   game logic; it only makes the numbers findable at the table.
+   ============================================================================ */
+
+/* ── Inline tokens ────────────────────────────────────────────────────────── */
+.hl { font-family: var(--font-mono); font-style: normal; }
+
+.hl-dc {
+  display: inline-block;
+  color: var(--hl-dc);
+  background: var(--hl-dc-tint);
+  border: 1px solid var(--hl-dc-line);
+  border-radius: 3px;
+  padding: 0.05em 0.42em;
+  font-size: 0.84em;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.hl-dice, .hl-hit {
+  display: inline-block;
+  color: var(--hl-dmg);
+  background: var(--hl-dmg-tint);
+  border-radius: 3px;
+  padding: 0.05em 0.36em;
+  font-size: 0.87em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px var(--hl-dmg-line);
+}
+
+/* Fixed damage — same family as the dice, minus the "you can roll me" ring. */
+.hl-flat {
+  display: inline-block;
+  color: var(--hl-dmg);
+  background: var(--hl-dmg-tint);
+  border-radius: 3px;
+  padding: 0.05em 0.36em;
+  font-size: 0.87em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.hl-cond {
+  color: var(--hl-cond);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  border-bottom: 1px dotted var(--hl-cond-line);
+}
+
+/* The stat block wraps most of these in <b>; keep the token's own colour. */
+.sb-ability p b .hl, .sb-mechanic p b .hl, .sb-prop b .hl { color: inherit; }
+
+/* ── Quick-DC strip ───────────────────────────────────────────────────────── */
+.dc-strip {
+  display: flex; align-items: center; gap: 8px;
+  max-width: 680px; margin: 0 auto 16px;
+  padding: 10px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.dc-strip::-webkit-scrollbar { display: none; }
+.dc-strip-label {
+  font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--muted); flex-shrink: 0; padding-right: 2px;
+}
+.dc-chip {
+  display: inline-flex; align-items: baseline; gap: 0.45em; flex-shrink: 0;
+  border: 1px solid var(--hl-dc-line); border-radius: 4px;
+  background: var(--hl-dc-tint);
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.dc-chip b { color: var(--hl-dc); font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; }
+.dc-chip .dc-save { color: var(--hl-dc); font-size: 0.6rem; letter-spacing: 0.14em; opacity: 0.8; }
+.dc-chip .dc-src { color: var(--paper-dim); font-size: 0.6rem; letter-spacing: 0.06em; }
+
+/* ── Rollable ability ─────────────────────────────────────────────────────── */
+.sb-ability, .sb-mechanic { position: relative; }
+.sb-ability.is-rollable, .sb-mechanic.is-rollable {
+  cursor: pointer;
+  border-radius: 5px;
+  margin-left: -10px; margin-right: -10px;
+  padding: 8px 34px 8px 10px;
+  transition: background 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.sb-ability.is-rollable::after, .sb-mechanic.is-rollable::after {
+  content: '\2B21';                       /* hexagon — the die at rest */
+  position: absolute; top: 9px; right: 10px;
+  font-size: 0.9rem; line-height: 1;
+  color: var(--hl-dmg); opacity: 0.4;
+  transition: opacity 0.3s, transform 0.3s var(--ease);
+}
+.sb-ability.is-rollable:hover, .sb-mechanic.is-rollable:hover,
+.sb-ability.is-rollable:focus-visible, .sb-mechanic.is-rollable:focus-visible {
+  background: rgba(232, 121, 95, 0.06);
+  box-shadow: inset 2px 0 0 var(--hl-dmg-line);
+}
+.sb-ability.is-rollable:hover::after, .sb-mechanic.is-rollable:hover::after {
+  opacity: 1; transform: rotate(30deg);
+}
+.sb-ability.is-rollable:active, .sb-mechanic.is-rollable:active { background: rgba(232, 121, 95, 0.1); }
+.sb-ability.has-roll::after, .sb-mechanic.has-roll::after { opacity: 1; }
+
+/* ── Roll result panel ────────────────────────────────────────────────────── */
+.roll {
+  margin-top: 11px;
+  border: 1px solid var(--hl-dmg-line);
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(232,121,95,0.08), rgba(0,0,0,0.22));
+  overflow: hidden;
+  cursor: default;
+}
+.roll.is-rolling { animation: rollIn 0.32s var(--ease); }
+@keyframes rollIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+
+.roll-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 7px 8px 7px 11px;
+  border-bottom: 1px solid rgba(232,121,95,0.18);
+}
+.roll-title {
+  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--hl-dmg);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.roll-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.roll-btn {
+  width: 30px; height: 30px; display: grid; place-items: center;
+  background: transparent; border: none; border-radius: 4px;
+  color: var(--paper-dim); font-size: 0.9rem; cursor: pointer;
+  transition: color 0.25s, background 0.25s;
+  -webkit-tap-highlight-color: transparent;
+}
+.roll-btn:hover, .roll-btn:focus-visible { color: var(--hl-dmg); background: rgba(232,121,95,0.12); }
+
+.roll-dcs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 11px 0; }
+.roll-dc {
+  font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--hl-dc);
+  border: 1px solid var(--hl-dc-line); background: var(--hl-dc-tint);
+  border-radius: 3px; padding: 3px 7px;
+}
+
+.roll-rows { padding: 8px 11px 10px; display: flex; flex-direction: column; gap: 7px; }
+.roll-row {
+  display: grid;
+  grid-template-columns: 5.2em 1fr auto;
+  align-items: center; gap: 9px;
+}
+.roll-k {
+  font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted);
+}
+.roll-dice { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-width: 0; }
+.roll-die {
+  font-family: var(--font-mono); font-style: normal; font-size: 0.76rem;
+  min-width: 1.85em; padding: 2px 4px; text-align: center;
+  color: var(--paper); background: rgba(233,228,214,0.07);
+  border: 1px solid var(--line-strong); border-radius: 3px;
+}
+.roll-die.is-max { color: var(--hl-dmg); border-color: var(--hl-dmg-line); background: var(--hl-dmg-tint); }
+.roll-die.is-min { color: var(--muted); }
+.roll-mod { font-family: var(--font-mono); font-size: 0.72rem; color: var(--paper-dim); margin-left: 2px; }
+.roll-fixed {
+  font-family: var(--font-mono); font-size: 0.54rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted);
+}
+.roll-row.is-flat .roll-total { color: var(--paper-soft); }
+.roll-total {
+  font-family: var(--font-display); font-size: 1.32rem; line-height: 1;
+  color: var(--paper); justify-self: end;
+}
+.roll-row.is-crit .roll-total { color: var(--hl-dmg); text-shadow: 0 0 14px rgba(232,121,95,0.5); }
+.roll-row.is-fumble .roll-total { color: var(--muted); }
+.roll-note {
+  grid-column: 2 / -1;
+  font-family: var(--font-mono); font-size: 0.54rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--hl-dmg); margin-top: -3px;
+}
+.roll-row.is-fumble .roll-note { color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .roll.is-rolling { animation: none; }
+  .sb-ability.is-rollable::after, .sb-mechanic.is-rollable::after { transition: none; }
+}
+
+/* ============================================================================
+   MOBILE — the codex in one hand
+   ============================================================================ */
+
+/* Sub-page nav stays reachable through a long stat block. */
+@media (max-width: 760px) {
+  .topnav {
+    position: sticky; top: 0; z-index: 30;
+    margin: calc(-1 * clamp(28px, 5vw, 64px)) calc(-1 * clamp(18px, 4vw, 40px)) 20px;
+    padding: 10px clamp(18px, 4vw, 40px);
+    padding-top: calc(10px + env(safe-area-inset-top));
+    background: rgba(12, 17, 19, 0.88);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 620px) {
+  body { font-size: 16px; }
+
+  .shell { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+
+  /* Six ability cells never fit; three by two do. */
+  .sb-scores { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .sb-score-v { font-size: 1.35rem; }
+
+  .plate { border-radius: 6px; box-shadow: 0 10px 28px rgba(0,0,0,0.45); }
+  .plate-inner { padding: 20px 16px; }
+  .sb-name { font-size: 1.42rem; }
+  .sb-basics p, .sb-prop { font-size: 0.9rem; line-height: 1.65; }
+  .sb-ability p, .sb-mechanic p { font-size: 0.88rem; }
+
+  .plate-mastery { gap: 10px; }
+  .dc-strip { padding-left: 2px; padding-right: 2px; }
+
+  /* Full-bleed tap zone for rollable entries. */
+  .sb-ability.is-rollable, .sb-mechanic.is-rollable {
+    margin-left: -8px; margin-right: -8px;
+    padding: 10px 32px 10px 8px;
+    min-height: 44px;
+  }
+  .sb-ability.is-rollable::after, .sb-mechanic.is-rollable::after { opacity: 0.75; }
+
+  .roll-row { grid-template-columns: 4.6em 1fr auto; gap: 7px; }
+  .roll-total { font-size: 1.2rem; }
+
+  /* Comfortable targets everywhere. */
+  .btn { min-height: 44px; padding: 0.75em 1.15em; font-size: 0.64rem; }
+  .topnav { gap: 8px; }
+
+  /* Skill tree */
+  .tier { grid-template-columns: 20px 1fr; gap: 10px; }
+  .tier-card { padding: 13px 12px; }
+  .tier.available .tier-card, .tier.unlocked .tier-card { min-height: 44px; }
+  .tier.stat .tier-card { min-height: 40px; }
+  .shaft-body { padding: 16px 10px 12px; }
+  .instrument-foot { gap: 8px 16px; padding: 11px 14px; }
+  .legend { gap: 12px; }
+  .fieldnote { padding: 14px 16px; }
+
+  /* 16px keeps iOS from zooming the viewport on focus. */
+  .gh-fields input { font-size: 16px; padding: 11px 12px; }
+  .gh-panel { max-width: 100%; }
+}
+
+@media (max-width: 400px) {
+  .abilities { grid-template-columns: repeat(2, 1fr); }
+  .ability:nth-child(3) { border-right: 1px solid var(--line); }
+  .ability:nth-child(2n) { border-right: none; }
+  .ability:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .dc-chip .dc-src { display: none; }
+  .roll-row { grid-template-columns: 1fr auto; }
+  .roll-k { grid-column: 1 / -1; margin-bottom: -4px; }
+}
+
+/* The skill-tree tooltip tracks the cursor — meaningless without one, and the
+   rule text is already printed on the card. */
+@media (hover: none) {
+  .tooltip { display: none !important; }
+  .sb-ability.is-rollable:hover, .sb-mechanic.is-rollable:hover {
+    background: transparent; box-shadow: none;
+  }
+  .sb-ability.is-rollable:hover::after, .sb-mechanic.is-rollable:hover::after { transform: none; }
+}

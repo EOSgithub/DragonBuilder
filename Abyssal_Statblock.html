@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Abyssal Dragon — Stat Block</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="codex.css">
+<script src="codex.js"></script>
 </head>
 <body data-dragon="abyssal" data-page="statblock">
 
@@ -44,7 +45,7 @@
     <div class="plate-rule"></div>
   </article>
 
-  <p class="sb-locked-hint reveal r3">Unlock mastery in the Skill Tree to empower the dragon</p>
+  <p class="sb-locked-hint reveal r3">Tocca un&rsquo;abilit&agrave; per tirarne i dadi &middot; Sblocca mastery nello Skill Tree per potenziare il drago</p>
 
 </main>
 
@@ -182,6 +183,7 @@ function render() {
     <p>The dragon unleashes a torrent of black abyssal water in a <b>30 ft. cone</b>. Each creature in the area must make a <b>STR save (DC ${breathDC})</b> or be <b>pushed or pulled 30 ft.</b> and take <b>6d10 cold damage</b> (half as much damage on a success).</p></div>`;
 
   document.getElementById('sbInner').innerHTML = html;
+  if (window.Codex) Codex.enhance();
 }
 
 // ── GITHUB AUTO-LOAD ─────────────────────────────────────────────────────────

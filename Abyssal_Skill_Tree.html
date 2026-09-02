@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Abyssal Dragon — Skill Tree</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -183,6 +183,9 @@ function updateSaveBtn() {
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V'];
+// The tooltip tracks the cursor; on touch there is none, and the rule text is
+// already printed on the card.
+const FINE_POINTER = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 function modStr(v) { const m = Math.floor((v - 10) / 2); return (m >= 0 ? '+' : '') + m; }
 function isAvailable(pathIdx, nodeIdx) {
   if (nodeIdx === 0) return true;
@@ -297,7 +300,7 @@ function rebuildUI() {
         });
       }
 
-      if (node.type !== 'stat') {
+      if (node.type !== 'stat' && FINE_POINTER) {
         card.addEventListener('mousemove', (e) => {
           const tip = document.getElementById('tooltip');
           document.getElementById('tooltipTitle').textContent = node.name;
